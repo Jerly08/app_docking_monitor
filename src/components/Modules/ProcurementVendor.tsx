@@ -224,13 +224,15 @@ export default function ProcurementVendorModule() {
                         <Badge colorScheme={getStatusColor(po.status)}>
                           {po.status}
                         </Badge>
-                        <Badge 
-                          colorScheme={getStatusColor(po.sapStatus)} 
-                          variant="outline"
-                          leftIcon={po.sapStatus === 'Synced' ? <FiCheck /> : <FiRefreshCw />}
-                        >
-                          SAP: {po.sapStatus}
-                        </Badge>
+                        <HStack>
+                          <Icon as={po.sapStatus === 'Synced' ? FiCheck : FiRefreshCw} boxSize={3} />
+                          <Badge 
+                            colorScheme={getStatusColor(po.sapStatus)} 
+                            variant="outline"
+                          >
+                            SAP: {po.sapStatus}
+                          </Badge>
+                        </HStack>
                       </VStack>
                     </Flex>
                     

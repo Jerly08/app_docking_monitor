@@ -15,7 +15,7 @@ import {
   useColorModeValue,
   Badge,
 } from '@chakra-ui/react'
-import { ReactNode, useState } from 'react'
+import React, { ReactNode, useState } from 'react'
 import {
   FiHome,
   FiSearch,
@@ -31,7 +31,7 @@ import {
 } from 'react-icons/fi'
 
 interface NavItemProps {
-  icon: any
+  icon: React.ElementType
   children: ReactNode
   isActive?: boolean
   onClick?: () => void

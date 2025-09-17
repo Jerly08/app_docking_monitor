@@ -1,189 +1,36 @@
-# 🚢 App Docking Monitor
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-Sistem monitoring dan manajemen proyek docking kapal yang komprehensif dengan antarmuka yang user-friendly.
+## Getting Started
 
-## 📋 Deskripsi Project
+First, run the development server:
 
-App Docking Monitor adalah aplikasi web modern untuk mengelola dan memantau proyek docking kapal. Aplikasi ini menyediakan berbagai modul untuk mengelola seluruh aspek proyek mulai dari survey awal hingga laporan akhir.
-
-## 🌟 Fitur Utama
-
-### 📊 **Dashboard**
-- Overview statistik proyek
-- Quick metrics dan KPI
-- Status monitoring real-time
-
-### 🗂️ **Manajemen Proyek & Nota Dinas**
-- Project tracking dan timeline management
-- Document management untuk nota dinas
-- Status workflow dan approval
-
-### 🔍 **Survey & Estimasi**
-- Survey report management
-- Cost estimation tools
-- Technical assessment tracking
-
-### 💰 **Penawaran & Negosiasi**
-- Quotation management
-- Vendor comparison tools
-- Negotiation workflow
-- Price analysis dan approval system
-
-### 🛒 **Procurement & Vendor**
-- Vendor management system
-- Purchase order tracking
-- Supplier performance monitoring
-
-### 📦 **Gudang & Material**
-- Inventory management
-- Stock tracking
-- Material request workflow
-- Low stock alerts
-
-### 👷 **Teknisi & Pelaksanaan**
-- Task assignment system
-- Progress tracking
-- Photo documentation (before/after)
-- Technician performance monitoring
-
-### 💳 **Finance & Payment**
-- Payment request management
-- SAP integration simulation
-- Financial approval workflow
-- Budget tracking
-
-### 📈 **Reporting & Analytics**
-- Comprehensive dashboard analytics
-- Multi-format export (PDF, Excel, CSV)
-- KPI tracking dan performance metrics
-- Financial reports dan vendor analysis
-
-## 🛠️ Tech Stack
-
-### Frontend
-- **Framework**: Next.js 14 dengan App Router
-- **UI Library**: Chakra UI
-- **Language**: TypeScript
-- **Icons**: React Icons (Feather Icons)
-- **Styling**: Modern responsive design
-
-### Development Tools
-- **Package Manager**: npm
-- **Linting**: ESLint
-- **Code Formatting**: Prettier (configured)
-- **Version Control**: Git
-
-## 🚀 Quick Start
-
-### Prerequisites
-- Node.js 18+ 
-- npm atau yarn
-- Git
-
-### Installation
-
-1. **Clone repository**
-   ```bash
-   git clone https://github.com/Jerly08/app_docking_monitor.git
-   cd app_docking_monitor
-   ```
-
-2. **Install dependencies**
-   ```bash
-   cd frontend
-   npm install
-   ```
-
-3. **Run development server**
-   ```bash
-   npm run dev
-   ```
-
-4. **Open browser**
-   ```
-   http://localhost:3000
-   ```
-
-## 📁 Project Structure
-
-```
-app_docking_monitor/
-├── frontend/
-│   ├── src/
-│   │   ├── app/
-│   │   │   ├── layout.tsx
-│   │   │   ├── page.tsx
-│   │   │   └── providers.tsx
-│   │   └── components/
-│   │       ├── Layout/
-│   │       │   └── MainLayout.tsx
-│   │       └── Modules/
-│   │           ├── Dashboard.tsx
-│   │           ├── ProjectManagement.tsx
-│   │           ├── SurveyEstimation.tsx
-│   │           ├── QuotationNegotiation.tsx
-│   │           ├── ProcurementVendor.tsx
-│   │           ├── WarehouseMaterial.tsx
-│   │           ├── TechnicianWork.tsx
-│   │           ├── FinancePayment.tsx
-│   │           └── Reporting.tsx
-│   ├── package.json
-│   └── next.config.ts
-└── README.md
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
 ```
 
-## 🎨 UI/UX Features
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-- **Responsive Design**: Optimized untuk desktop dan mobile
-- **Modern Interface**: Clean dan professional design
-- **Intuitive Navigation**: Sidebar navigation dengan active state
-- **Color-coded Status**: Visual indicators untuk status dan performance
-- **Interactive Components**: Rich UI components dengan feedback
-- **Data Visualization**: Charts dan progress indicators
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-## 📊 Sample Data
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-Aplikasi ini dilengkapi dengan data dummy yang realistis untuk demonstration:
-- Sample projects dengan berbagai status
-- Vendor data dengan performance metrics
-- Material inventory dengan stock levels
-- Financial data dengan budget tracking
-- Technician assignments dengan task tracking
+## Learn More
 
-## 🔮 Future Development
+To learn more about Next.js, take a look at the following resources:
 
-- [ ] Backend API development
-- [ ] Database integration
-- [ ] Real-time notifications
-- [ ] Mobile app development
-- [ ] SAP integration
-- [ ] Advanced reporting features
-- [ ] Multi-language support
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-## 🤝 Contributing
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+## Deploy on Vercel
 
-## 📝 License
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 👨‍💻 Author
-
-**Jerly08**
-- GitHub: [@Jerly08](https://github.com/Jerly08)
-- Repository: [app_docking_monitor](https://github.com/Jerly08/app_docking_monitor)
-
-## 🙏 Acknowledgments
-
-- Chakra UI team untuk amazing UI components
-- Next.js team untuk powerful React framework
-- React Icons untuk comprehensive icon set
-
----
-
-⭐ Jika project ini membantu Anda, jangan lupa untuk memberikan star di GitHub!
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
