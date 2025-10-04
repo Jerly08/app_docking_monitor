@@ -140,6 +140,7 @@ const WorkPlanTable = ({ workItems, onUpdate }: { workItems: WorkItem[], onUpdat
                 icon={isExpanded ? <FiChevronDown /> : <FiChevronRight />}
                 onClick={() => toggleExpanded(item.id)}
                 mr={2}
+                suppressHydrationWarning
               />
             )}
             {item.id}
@@ -175,6 +176,7 @@ const WorkPlanTable = ({ workItems, onUpdate }: { workItems: WorkItem[], onUpdat
                   onBlur={saveEdit}
                   onKeyPress={(e) => e.key === 'Enter' && saveEdit()}
                   autoFocus
+                  suppressHydrationWarning
                 />
               </NumberInput>
             ) : (
@@ -250,6 +252,7 @@ const WorkPlanTable = ({ workItems, onUpdate }: { workItems: WorkItem[], onUpdat
                   onBlur={saveEdit}
                   onKeyPress={(e) => e.key === 'Enter' && saveEdit()}
                   autoFocus
+                  suppressHydrationWarning
                 />
               </NumberInput>
             ) : (
@@ -310,6 +313,7 @@ const WorkPlanTable = ({ workItems, onUpdate }: { workItems: WorkItem[], onUpdat
                   console.error('Error updating milestone:', error)
                 }
               }}
+              suppressHydrationWarning
             />
           </Td>
           <Td>
@@ -345,6 +349,7 @@ const WorkPlanTable = ({ workItems, onUpdate }: { workItems: WorkItem[], onUpdat
                 icon={<FiEye />}
                 colorScheme="blue"
                 aria-label="View"
+                suppressHydrationWarning
               />
               <IconButton
                 size="sm"
@@ -352,6 +357,7 @@ const WorkPlanTable = ({ workItems, onUpdate }: { workItems: WorkItem[], onUpdat
                 icon={<FiEdit />}
                 colorScheme="green"
                 aria-label="Edit"
+                suppressHydrationWarning
               />
               <IconButton
                 size="sm"
@@ -359,6 +365,7 @@ const WorkPlanTable = ({ workItems, onUpdate }: { workItems: WorkItem[], onUpdat
                 icon={<FiCopy />}
                 colorScheme="purple"
                 aria-label="Sub"
+                suppressHydrationWarning
               />
               <IconButton
                 size="sm"
@@ -366,6 +373,7 @@ const WorkPlanTable = ({ workItems, onUpdate }: { workItems: WorkItem[], onUpdat
                 icon={<FiTrash2 />}
                 colorScheme="red"
                 aria-label="Delete"
+                suppressHydrationWarning
               />
             </HStack>
           </Td>
@@ -565,19 +573,19 @@ export default function WorkPlanReportPage() {
               </Text>
             </Box>
             <HStack spacing={2} wrap="wrap">
-              <Button leftIcon={<FiUpload />} variant="outline" size="sm">
+              <Button leftIcon={<FiUpload />} variant="outline" size="sm" suppressHydrationWarning>
                 Paste/Import
               </Button>
-              <Button leftIcon={<FiFileText />} colorScheme="purple" size="sm" onClick={exportToPDF}>
+              <Button leftIcon={<FiFileText />} colorScheme="purple" size="sm" onClick={exportToPDF} suppressHydrationWarning>
                 Generate PDF
               </Button>
-              <Button leftIcon={<FiDownload />} colorScheme="green" size="sm" onClick={exportToCSV}>
+              <Button leftIcon={<FiDownload />} colorScheme="green" size="sm" onClick={exportToCSV} suppressHydrationWarning>
                 Export CSV
               </Button>
-              <Button leftIcon={<FiPlus />} colorScheme="blue" size="sm">
+              <Button leftIcon={<FiPlus />} colorScheme="blue" size="sm" suppressHydrationWarning>
                 Tambah Baris
               </Button>
-              <Button leftIcon={<FiCopy />} colorScheme="orange" size="sm" onClick={createSampleHierarchy}>
+              <Button leftIcon={<FiCopy />} colorScheme="orange" size="sm" onClick={createSampleHierarchy} suppressHydrationWarning>
                 Create Sample Hierarchy
               </Button>
             </HStack>
