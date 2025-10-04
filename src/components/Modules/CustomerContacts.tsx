@@ -195,24 +195,6 @@ const CustomerContacts = () => {
           duration: 3000,
           isClosable: true,
         })
-      } else {
-        // Add new customer
-        const newCustomer: CustomerContact = {
-          ...formData,
-          id: Date.now().toString(),
-          createdAt: new Date().toISOString().split('T')[0],
-          updatedAt: new Date().toISOString().split('T')[0],
-          totalDockings: 0,
-        } as CustomerContact
-        
-        setCustomers([...customers, newCustomer])
-        toast({
-          title: 'Customer Added',
-          description: 'New customer contact has been added successfully.',
-          status: 'success',
-          duration: 3000,
-          isClosable: true,
-        })
         onEditClose()
       } else {
         // Add new customer
