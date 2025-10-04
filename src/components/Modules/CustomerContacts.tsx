@@ -19,7 +19,6 @@ import {
   Select,
   Badge,
   IconButton,
-  useDisclosure,
   Modal,
   ModalOverlay,
   ModalContent,
@@ -58,10 +57,10 @@ import {
   FiMail,
   FiMapPin,
   FiUser,
-  FiBuilding,
   FiFileText,
   FiDownload,
   FiFilter,
+  FiX,
 } from 'react-icons/fi'
 import React, { useState, useEffect, useRef } from 'react'
 import { CustomerContact, CustomerFormData, CustomerStatus, VesselType } from '@/types/customer'
@@ -74,11 +73,11 @@ const CustomerContacts = () => {
   const [statusFilter, setStatusFilter] = useState('all')
   const [selectedCustomer, setSelectedCustomer] = useState<CustomerContact | null>(null)
   
-  // Modal states
-  const { isOpen: isAddOpen, onOpen: onAddOpen, onClose: onAddClose } = useDisclosure()
-  const { isOpen: isEditOpen, onOpen: onEditOpen, onClose: onEditClose } = useDisclosure()
-  const { isOpen: isViewOpen, onOpen: onViewOpen, onClose: onViewClose } = useDisclosure()
-  const { isOpen: isDeleteOpen, onOpen: onDeleteOpen, onClose: onDeleteClose } = useDisclosure()
+  // Simple modal states
+  const [isAddOpen, setIsAddOpen] = useState(false)
+  const [isEditOpen, setIsEditOpen] = useState(false)
+  const [isViewOpen, setIsViewOpen] = useState(false)
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false)
   
   const cancelRef = useRef<HTMLButtonElement>(null)
   const toast = useToast()
@@ -104,7 +103,31 @@ const CustomerContacts = () => {
   const bgColor = useColorModeValue('white', 'gray.800')
   const borderColor = useColorModeValue('gray.200', 'gray.600')
 
-  // Mock data - replace with actual API calls
+  // Simple modal handlers
+  const onAddOpen = () => setIsAddOpen(true)
+  const onAddClose = () => {
+    setIsAddOpen(false)
+    resetForm()
+  }
+  
+  const onEditOpen = () => setIsEditOpen(true)
+  const onEditClose = () => {
+    setIsEditOpen(false)
+    resetForm()
+  }
+  
+  const onViewOpen = () => setIsViewOpen(true)
+  const onViewClose = () => {
+    setIsViewOpen(false)
+    setSelectedCustomer(null)
+  }
+  
+  const onDeleteOpen = () => setIsDeleteOpen(true)
+  const onDeleteClose = () => {
+    setIsDeleteOpen(false)
+    setSelectedCustomer(null)
+  }
+
   useEffect(() => {
     const mockData: CustomerContact[] = [
       {
@@ -195,7 +218,7 @@ const CustomerContacts = () => {
           duration: 3000,
           isClosable: true,
         })
-        onEditClose()
+        setIsEditOpen(false)
       } else {
         // Add new customer
         const newCustomer: CustomerContact = {
@@ -214,7 +237,7 @@ const CustomerContacts = () => {
           duration: 3000,
           isClosable: true,
         })
-        onAddClose()
+        setIsAddOpen(false)
       }
       
       // Reset form and clear selected customer
@@ -235,7 +258,7 @@ const CustomerContacts = () => {
   const handleEdit = (customer: CustomerContact) => {
     setSelectedCustomer(customer)
     setFormData(customer)
-    onEditOpen()
+    setIsEditOpen(true)
   }
 
   const resetForm = () => {
@@ -259,14 +282,9 @@ const CustomerContacts = () => {
   }
 
   const handleCancel = () => {
-    // Reset form data and clear selected customer
     resetForm()
-    // Close appropriate modal
-    if (isAddOpen) {
-      onAddClose()
-    } else if (isEditOpen) {
-      onEditClose()
-    }
+    setIsAddOpen(false)
+    setIsEditOpen(false)
   }
 
   const handleDelete = async () => {
@@ -283,7 +301,7 @@ const CustomerContacts = () => {
         duration: 3000,
         isClosable: true,
       })
-      onDeleteClose()
+      setIsDeleteOpen(false)
       setSelectedCustomer(null)
     } catch (error) {
       toast({
@@ -300,8 +318,9 @@ const CustomerContacts = () => {
 
   const handleView = (customer: CustomerContact) => {
     setSelectedCustomer(customer)
-    onViewOpen()
+    setIsViewOpen(true)
   }
+
 
   const getStatusBadge = (status: string) => {
     const statusColors: { [key: string]: string } = {
@@ -521,11 +540,22 @@ const CustomerContacts = () => {
       </Card>
 
       {/* Add/Edit Customer Modal */}
-      <Modal isOpen={isAddOpen || isEditOpen} onClose={handleCancel} size="xl">
+      <Modal isOpen={isAddOpen || isEditOpen} onClose={handleCancel} size="xl" closeOnOverlayClick={false} closeOnEsc={true}>
         <ModalOverlay />
         <ModalContent>
           <form onSubmit={handleSubmit}>
-            <ModalHeader>{selectedCustomer ? 'Edit Customer' : 'Add New Customer'}</ModalHeader>
+            <ModalHeader>
+              <HStack justify="space-between">
+                <Text>{selectedCustomer ? 'Edit Customer' : 'Add New Customer'}</Text>
+                <IconButton
+                  aria-label="Close modal"
+                  icon={<FiX />}
+                  size="sm"
+                  variant="ghost"
+                  onClick={handleCancel}
+                />
+              </HStack>
+            </ModalHeader>
             <ModalBody>
               <VStack spacing={4}>
                 {/* Vessel Information */}
@@ -612,7 +642,7 @@ const CustomerContacts = () => {
                     <FormLabel>Status</FormLabel>
                     <Select
                       value={formData.status}
-                      onChange={(e) => setFormData({...formData, status: e.target.value})}
+                      onChange={(e) => setFormData({...formData, status: e.target.value as CustomerStatus})}
                     >
                       <option value="ACTIVE">Active</option>
                       <option value="MAINTENANCE">Maintenance</option>
@@ -691,10 +721,31 @@ const CustomerContacts = () => {
       </Modal>
 
       {/* View Customer Modal */}
-      <Modal isOpen={isViewOpen} onClose={onViewClose} size="xl">
-        <ModalOverlay />
+      <Modal 
+        isOpen={isViewOpen} 
+        onClose={onViewClose} 
+        size="xl" 
+        closeOnOverlayClick={true} 
+        closeOnEsc={true}
+        isCentered
+      >
+        <ModalOverlay 
+          onClick={onViewClose}
+          bg="blackAlpha.600"
+        />
         <ModalContent>
-          <ModalHeader>Customer Details</ModalHeader>
+          <ModalHeader>
+            <HStack justify="space-between">
+              <Text>Customer Details</Text>
+              <IconButton
+                aria-label="Close modal"
+                icon={<FiX />}
+                size="sm"
+                variant="ghost"
+                onClick={onViewClose}
+              />
+            </HStack>
+          </ModalHeader>
           <ModalBody>
             {selectedCustomer && (
               <VStack align="start" spacing={4}>
@@ -793,7 +844,9 @@ const CustomerContacts = () => {
             )}
           </ModalBody>
           <ModalFooter>
-            <Button onClick={onViewClose}>Close</Button>
+            <Button onClick={onViewClose} colorScheme="blue">
+              Close
+            </Button>
           </ModalFooter>
         </ModalContent>
       </Modal>

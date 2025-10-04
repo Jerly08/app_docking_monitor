@@ -1,0 +1,37 @@
+TEMPLATE CONTENT UNTUK WORD DOCUMENT
+=====================================
+
+Paste content ini ke dalam file Word "Kop Surat PT PID - Kemayoran.docx":
+
+                                    DOCKING REPORT
+                         {vesselName} / TAHUN {reportYear}
+
+Nama armada        : {vesselInfo.name}            Pemilik    : {vesselInfo.owner}
+Ukuran armada      : LOA {vesselInfo.loa}         DWT/GT     : {vesselInfo.dwtGt}
+                     LPP {vesselInfo.lpp}         Dok Dioda  : {vesselInfo.dokType}
+                     B   {vesselInfo.breadth}     Type       : {vesselInfo.vesselType}
+                     H   {vesselInfo.depth}       Status     : {vesselInfo.dockPeriod}
+
+===============================================================================
+Total Tasks: {totalTasks}    Avg % Complete: {avgCompletion}%    Milestones: {milestones}    Conflicted Tasks: {conflictedTasks}
+===============================================================================
+
+{#packageGroups}
+
+{packageName}
+
+No  | URAIAN - KETERANGAN                                    | VOL | SAT | KETERANGAN      | LAMPIRAN
+----|-------------------------------------------------------|-----|-----|-----------------|----------
+{#items}
+{number}   | {taskName}                                          | {volume} | {unit}  | {status}        | [FOTO AREA]
+    | {realizationChild.title}                              |     |     |                |
+    | {realizationChild.description}                        |     |     | {realizationChild.status} |
+    | {realizationNotes}                                    |     |     |                |
+{/items}
+
+{/packageGroups}
+
+---
+Dibuat oleh: {generatedBy}
+Tanggal: {generatedDate}
+{companyName}

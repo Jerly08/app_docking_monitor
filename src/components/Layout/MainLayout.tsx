@@ -12,7 +12,6 @@ import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbLink,
-  useColorModeValue,
   Badge,
   Menu,
   MenuButton,
@@ -102,14 +101,8 @@ const modules = [
 export default function MainLayout({ children, currentModule = 'dashboard', breadcrumbs, onModuleChange }: MainLayoutProps) {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [activeModule, setActiveModule] = useState(currentModule)
-  const [isMounted, setIsMounted] = useState(false)
   const { user, logout } = useAuth()
   const router = useRouter()
-  
-  // Prevent hydration mismatch by ensuring client-side mounting
-  useEffect(() => {
-    setIsMounted(true)
-  }, [])
   
   const handleModuleClick = (moduleId: string) => {
     setActiveModule(moduleId)
@@ -120,28 +113,11 @@ export default function MainLayout({ children, currentModule = 'dashboard', brea
     router.push(`/${moduleId}`)
   }
 
-  const bgColor = useColorModeValue('white', 'gray.800')
-  const borderColor = useColorModeValue('gray.200', 'gray.700')
-  const sidebarBg = useColorModeValue('gray.50', 'gray.900')
-  
-  // Prevent flash during hydration
-  if (!isMounted) {
-    return (
-      <Flex h="100vh">
-        <Box w="280px" bg={sidebarBg} borderRight="1px" borderColor={borderColor}>
-          <Flex h="60px" align="center" px={4} borderBottom="1px" borderColor={borderColor}>
-            <Text fontSize="lg" fontWeight="bold" color="blue.600">Docking Monitor</Text>
-          </Flex>
-        </Box>
-        <Flex flex="1" direction="column">
-          <Flex h="60px" bg={bgColor} borderBottom="1px" borderColor={borderColor} />
-          <Box flex="1" overflow="auto" bg={useColorModeValue('gray.50', 'gray.900')}>
-            {children}
-          </Box>
-        </Flex>
-      </Flex>
-    )
-  }
+  // Color mode values - simplified to avoid hydration issues
+  const bgColor = 'white'
+  const borderColor = 'gray.200'
+  const sidebarBg = 'gray.50'
+  const contentBg = 'gray.50'
 
   return (
     <Flex h="100vh">
@@ -246,15 +222,15 @@ export default function MainLayout({ children, currentModule = 'dashboard', brea
             </Button>
             
             <Menu>
-              <MenuButton as={Button} variant="ghost" size="sm" rightIcon={<FiChevronDown />} suppressHydrationWarning>
+              <MenuButton as={Button} variant="ghost" size="sm" rightIcon={<FiChevronDown />}>
                 <HStack spacing={3}>
-                  <Avatar size="sm" name={user?.fullName || user?.username} />
+                  <Avatar size="sm" name={user?.fullName || user?.username || 'User'} />
                   <VStack spacing={0} align="start">
                     <Text fontSize="sm" fontWeight="medium">
-                      {user?.fullName || user?.username}
+                      {user?.fullName || user?.username || 'User'}
                     </Text>
                     <Text fontSize="xs" color="gray.500">
-                      {user?.role}
+                      {user?.role || 'Admin'}
                     </Text>
                   </VStack>
                 </HStack>
@@ -276,7 +252,7 @@ export default function MainLayout({ children, currentModule = 'dashboard', brea
         </Flex>
 
         {/* Content Area */}
-        <Box flex="1" overflow="auto" bg={useColorModeValue('gray.50', 'gray.900')}>
+        <Box flex="1" overflow="auto" bg={contentBg}>
           {children}
         </Box>
       </Flex>

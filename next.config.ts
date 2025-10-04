@@ -1,7 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Ensure proper handling of CSS-in-JS during SSR
+  compiler: {
+    emotion: true,
+  },
 };
 
 export default nextConfig;

@@ -52,7 +52,11 @@ import {
   FiSave,
 } from 'react-icons/fi'
 import React, { useState, useEffect, Fragment } from 'react'
-import MainLayout from '@/components/Layout/MainLayout'
+import ClientOnlyLayout from '@/components/Layout/ClientOnlyLayout'
+import ProjectSelector from '@/components/Project/ProjectSelector'
+import TemplateGenerator from '@/components/Project/TemplateGenerator'
+import ProjectManager from '@/components/Project/ProjectManager'
+import NoSSR from '@/components/NoSSR'
 
 interface WorkItem {
   id: string
@@ -77,17 +81,26 @@ interface WorkItem {
   parent?: WorkItem
   createdAt?: string
   updatedAt?: string
+  projectId?: string
+  templateId?: string
+}
+
+interface Project {
+  id: string
+  projectName: string
+  vesselName?: string
+  customerCompany?: string
+  status: string
+  createdAt: string
+  _count?: {
+    workItems: number
+  }
 }
 
 const WorkPlanTable = ({ workItems, onUpdate }: { workItems: WorkItem[], onUpdate: () => void }) => {
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
   const [editingCell, setEditingCell] = useState<{ id: string, field: string } | null>(null)
   const [editValue, setEditValue] = useState('')
-  const [isMounted, setIsMounted] = useState(false)
-  
-  useEffect(() => {
-    setIsMounted(true)
-  }, [])
 
   const toggleExpanded = (id: string) => {
     const newExpanded = new Set(expandedRows)
@@ -336,21 +349,15 @@ const WorkPlanTable = ({ workItems, onUpdate }: { workItems: WorkItem[], onUpdat
             </Text>
           </Td>
           <Td>
-            {isMounted ? (
-              (() => {
-                // Use deterministic logic based on item.id to avoid hydration mismatch
-                const isConflict = item.id.length % 3 === 0 || item.completion < 50
-                return (
-                  <Badge colorScheme={isConflict ? 'red' : 'green'} size="sm">
-                    {isConflict ? 'Hapus' : 'OK'}
-                  </Badge>
-                )
-              })()
-            ) : (
-              <Badge colorScheme="gray" size="sm">
-                Loading...
-              </Badge>
-            )}
+            {(() => {
+              // Use deterministic logic based on item.id to avoid hydration mismatch
+              const isConflict = item.id.length % 3 === 0 || item.completion < 50
+              return (
+                <Badge colorScheme={isConflict ? 'red' : 'green'} size="sm">
+                  {isConflict ? 'Hapus' : 'OK'}
+                </Badge>
+              )
+            })()}
           </Td>
           <Td>
             <HStack spacing={1}>
@@ -423,12 +430,30 @@ const WorkPlanTable = ({ workItems, onUpdate }: { workItems: WorkItem[], onUpdat
 }
 
 export default function WorkPlanReportPage() {
+  return (
+    <NoSSR 
+      fallback={
+        <div>
+          <Box h="100vh" bg="gray.50" display="flex" alignItems="center" justifyContent="center">
+            <Text>Loading...</Text>
+          </Box>
+        </div>
+      }
+    >
+      <WorkPlanReportContent />
+    </NoSSR>
+  )
+}
+
+function WorkPlanReportContent() {
   const [workItems, setWorkItems] = useState<WorkItem[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [packageFilter, setPackageFilter] = useState('')
   const [resourceFilter, setResourceFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null)
+  const [selectedProjectId, setSelectedProjectId] = useState<string>('')
   const toast = useToast()
 
   const breadcrumbs = [
@@ -439,8 +464,27 @@ export default function WorkPlanReportPage() {
   const fetchWorkItems = async () => {
     try {
       setLoading(true)
+      
+      // Don't fetch if no project selected
+      if (!selectedProjectId) {
+        setWorkItems([])
+        setLoading(false)
+        return
+      }
+      
       const token = localStorage.getItem('auth_token')
-      const response = await fetch('http://localhost:4000/api/work-items', {
+      
+      // Build query parameters for server-side filtering
+      const queryParams = new URLSearchParams()
+      if (searchTerm) queryParams.append('search', searchTerm)
+      if (packageFilter) queryParams.append('package', packageFilter)
+      if (statusFilter) queryParams.append('status', statusFilter)
+      
+      const url = `/api/projects/${selectedProjectId}/work-items${
+        queryParams.toString() ? `?${queryParams.toString()}` : ''
+      }`
+      
+      const response = await fetch(url, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -449,7 +493,8 @@ export default function WorkPlanReportPage() {
 
       if (response.ok) {
         const data = await response.json()
-        setWorkItems(data)
+        // Handle both formats: direct array or object with workItems property
+        setWorkItems(data.workItems || data)
       } else {
         throw new Error('Failed to fetch work items')
       }
@@ -466,146 +511,109 @@ export default function WorkPlanReportPage() {
     }
   }
 
-  const createSampleHierarchy = async () => {
-    try {
-      const sampleData = {
-        id: `SAMPLE-${Date.now()}`,
-        title: 'Sample Work Item',
-        description: 'This is a sample work item',
-        completion: 0,
-        package: 'Sample Package',
-        durationDays: 5,
-        startDate: new Date().toISOString().split('T')[0],
-        finishDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        resourceNames: 'Sample Resource',
-        isMilestone: false
-      }
 
-      const token = localStorage.getItem('auth_token')
-      const response = await fetch('http://localhost:4000/api/work-items', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(sampleData)
-      })
-
-      if (response.ok) {
-        toast({
-          title: 'Success',
-          description: 'Sample hierarchy created',
-          status: 'success',
-          duration: 3000
-        })
-        fetchWorkItems()
-      }
-    } catch (error) {
-      console.error('Error creating sample:', error)
-      toast({
-        title: 'Error',
-        description: 'Failed to create sample hierarchy',
-        status: 'error',
-        duration: 3000
-      })
-    }
+  const handleProjectChange = (projectId: string, project: Project | null) => {
+    setSelectedProjectId(projectId)
+    setSelectedProject(project)
   }
 
+  // Debounce function for search
   useEffect(() => {
-    fetchWorkItems()
-  }, [])
+    const timeoutId = setTimeout(() => {
+      fetchWorkItems()
+    }, searchTerm ? 500 : 0) // 500ms delay for search, immediate for other filters
 
-  const exportToPDF = async () => {
+    return () => clearTimeout(timeoutId)
+  }, [selectedProjectId, searchTerm, packageFilter, statusFilter])
+
+  const exportToPDF = async (format: 'pdf' | 'word' = 'pdf') => {
     try {
+      if (!selectedProjectId || !selectedProject) {
+        toast({
+          title: 'Error',
+          description: 'Please select a project first',
+          status: 'error',
+          duration: 3000
+        })
+        return
+      }
+
+      if (workItems.length === 0) {
+        toast({
+          title: 'Error',
+          description: 'No work items found for this project',
+          status: 'error',
+          duration: 3000
+        })
+        return
+      }
+
+      const formatText = format === 'pdf' ? 'PDF' : 'Word'
       toast({
-        title: 'Generating Docking Report...',
-        description: 'Please wait while we generate your docking report using company template',
+        title: `Generating ${formatText} Report...`,
+        description: `Generating ${formatText.toLowerCase()} report for ${selectedProject?.projectName || 'selected project'}`,
         status: 'info',
         duration: 2000
       })
 
-      const response = await fetch('/api/reports/work-plan', {
+      const response = await fetch(`/api/reports/work-plan?format=${format}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
         },
         body: JSON.stringify({
-          projectName: 'MT. FERIMAS SEJAHTERA',
-          workItems: workItems
+          projectId: selectedProjectId,
+          projectName: selectedProject?.projectName || 'Unknown Project',
+          generateForProject: selectedProjectId // Add this for backend compatibility
         })
       })
 
+      console.log('API Response status:', response.status)
+      console.log('API Response headers:', response.headers)
+      
       if (response.ok) {
         const blob = await response.blob()
+        console.log('Blob size:', blob.size, 'bytes')
+        console.log('Blob type:', blob.type)
+        
+        if (blob.size === 0) {
+          throw new Error('Generated report is empty')
+        }
+        
         const url = URL.createObjectURL(blob)
         const a = document.createElement('a')
         a.href = url
-        a.download = `Docking_Report_${new Date().toISOString().split('T')[0]}.docx`
+        const projectName = selectedProject?.projectName?.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '_') || 'Project'
+        const fileExtension = format === 'pdf' ? 'pdf' : 'docx'
+        a.download = `Docking_Report_${projectName}_${new Date().toISOString().split('T')[0]}.${fileExtension}`
+        document.body.appendChild(a)
         a.click()
+        document.body.removeChild(a)
         URL.revokeObjectURL(url)
 
         toast({
           title: 'Docking Report Generated',
-          description: 'Laporan docking berhasil dibuat menggunakan template kop surat perusahaan',
+          description: `Report for ${selectedProject?.projectName} generated successfully`,
           status: 'success',
           duration: 4000
         })
       } else {
-        throw new Error('Failed to generate report')
+        const errorText = await response.text()
+        console.error('API Error response:', errorText)
+        throw new Error(`Failed to generate report: ${response.status} - ${errorText}`)
       }
     } catch (error) {
-      console.error('Error generating PDF:', error)
+      console.error(`Error generating ${format} report:`, error)
       toast({
         title: 'Error',
-        description: 'Failed to generate PDF report. Please try again.',
+        description: `Failed to generate ${format === 'pdf' ? 'PDF' : 'Word'} report. Please try again.`,
         status: 'error',
         duration: 3000
       })
     }
   }
 
-  const downloadTemplate = async () => {
-    try {
-      toast({
-        title: 'Downloading Template...',
-        description: 'Please wait while we prepare the template file',
-        status: 'info',
-        duration: 2000
-      })
-
-      const response = await fetch('/api/reports/work-plan', {
-        method: 'GET'
-      })
-
-      if (response.ok) {
-        const blob = await response.blob()
-        const url = URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = 'Template_Docking_Report.docx'
-        a.click()
-        URL.revokeObjectURL(url)
-
-        toast({
-          title: 'Template Downloaded',
-          description: 'Silahkan modifikasi template sesuai kebutuhan perusahaan',
-          status: 'success',
-          duration: 4000
-        })
-      } else {
-        throw new Error('Failed to download template')
-      }
-    } catch (error) {
-      console.error('Error downloading template:', error)
-      toast({
-        title: 'Error',
-        description: 'Failed to download template. Please try again.',
-        status: 'error',
-        duration: 3000
-      })
-    }
-  }
 
   const exportToCSV = () => {
     const csvData = workItems.map(item => ({
@@ -629,62 +637,122 @@ export default function WorkPlanReportPage() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = 'work-plan-report.csv'
+    const projectName = selectedProject?.projectName?.replace(/[^a-zA-Z0-9]/g, '_') || 'Project'
+    a.download = `work-plan-report_${projectName}_${new Date().toISOString().split('T')[0]}.csv`
     a.click()
     URL.revokeObjectURL(url)
 
     toast({
       title: 'Success',
-      description: 'CSV exported successfully',
+      description: `CSV exported successfully for ${selectedProject?.projectName}`,
       status: 'success',
       duration: 3000
     })
   }
 
+  // Server-side filtering is now handled in fetchWorkItems
+  // Only client-side filter for resourceFilter since it's not in the API yet
   const filteredItems = workItems.filter(item => {
-    const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesPackage = !packageFilter || (item.package || 'Pelayanan Umum').includes(packageFilter)
     const matchesResource = !resourceFilter || item.resourceNames.toLowerCase().includes(resourceFilter.toLowerCase())
-    return matchesSearch && matchesPackage && matchesResource
+    return matchesResource
   })
 
   const totalTasks = workItems.length
   const avgComplete = Math.round(workItems.reduce((sum, item) => sum + item.completion, 0) / totalTasks) || 0
   const milestones = workItems.filter(item => item.isMilestone).length
-  // Use deterministic calculation for conflicts to avoid hydration mismatch
-  const conflicts = workItems.filter(item => item.id.length % 3 === 0 || item.completion < 50).length
+  // Use deterministic calculation for conflicts to avoid hydration mismatch  
+  const conflicts = workItems.filter(item => item.completion < 50).length
 
   return (
-    <MainLayout currentModule="work-plan-report" breadcrumbs={breadcrumbs}>
+    <ClientOnlyLayout currentModule="work-plan-report" breadcrumbs={breadcrumbs}>
       <Container maxW="full" py={6}>
         <VStack spacing={6} align="stretch">
+          {/* Project Selection */}
+          <Card>
+            <CardBody>
+              <ProjectSelector 
+                selectedProjectId={selectedProjectId}
+                onProjectChange={handleProjectChange}
+                showCreateButton={true}
+                showProjectInfo={true}
+              />
+            </CardBody>
+          </Card>
+
           {/* Header */}
-          <Flex justify="space-between" align="center" wrap="wrap" gap={4}>
-            <Box>
-              <Heading size="lg" mb={2}>Work Plan & Report</Heading>
-              <Text color="gray.600">
-                Input label realisasi & progress, paste/import cepat, dan generate PDF
-              </Text>
-            </Box>
-            <HStack spacing={2} wrap="wrap">
-              <Button leftIcon={<FiUpload />} variant="outline" size="sm" suppressHydrationWarning>
-                Paste/Import
-              </Button>
-              <Button leftIcon={<FiFileText />} colorScheme="purple" size="sm" onClick={exportToPDF} suppressHydrationWarning>
-                Generate Docking Report (Word)
-              </Button>
-              <Button leftIcon={<FiDownload />} colorScheme="green" size="sm" onClick={exportToCSV} suppressHydrationWarning>
-                Export CSV
-              </Button>
-              <Button leftIcon={<FiDownload />} colorScheme="blue" variant="outline" size="sm" onClick={downloadTemplate} suppressHydrationWarning>
-                Download Template
-              </Button>
-              <Button leftIcon={<FiPlus />} colorScheme="blue" size="sm" suppressHydrationWarning>
-                Tambah Baris
-              </Button>
-              <Button leftIcon={<FiCopy />} colorScheme="orange" size="sm" onClick={createSampleHierarchy} suppressHydrationWarning>
-                Create Sample Hierarchy
-              </Button>
+          <Flex justify="space-between" align="center" wrap="wrap" gap={4} mb={2}>
+            <VStack align="start" spacing={1}>
+              <Heading size="xl" color="gray.800">Work Plan & Report</Heading>
+              {selectedProject ? (
+                <HStack spacing={2}>
+                  <Text color="gray.600" fontSize="md">
+                    Managing work items for
+                  </Text>
+                  <Text color="blue.600" fontSize="md" fontWeight="semibold">
+                    {selectedProject.projectName}
+                  </Text>
+                </HStack>
+              ) : (
+                <Text color="gray.500" fontSize="md">
+                  Select or create a project to get started
+                </Text>
+              )}
+            </VStack>
+            <HStack spacing={3} wrap="wrap" justify="space-between">
+              {/* Project Management Actions */}
+              <HStack spacing={2}>
+                <ProjectManager 
+                  currentProjectId={selectedProjectId}
+                  onProjectUpdated={() => {
+                    // Refresh project selector and work items
+                    handleProjectChange(selectedProjectId, selectedProject)
+                  }}
+                />
+                {selectedProjectId && (
+                  <TemplateGenerator 
+                    projectId={selectedProjectId}
+                    onWorkItemsGenerated={fetchWorkItems}
+                  />
+                )}
+                {selectedProjectId && (
+                  <Button 
+                    leftIcon={<FiPlus />} 
+                    colorScheme="blue" 
+                    size="sm" 
+                    suppressHydrationWarning
+                    onClick={() => {
+                      // Add manual work item functionality here later
+                    }}
+                  >
+                    Add Work Item
+                  </Button>
+                )}
+              </HStack>
+
+              {/* Export Actions */}
+              <HStack spacing={2}>
+                {/* Export Report Button */}
+                <Button 
+                  leftIcon={<FiFileText />} 
+                  colorScheme="purple" 
+                  size="sm" 
+                  disabled={!selectedProjectId || workItems.length === 0}
+                  onClick={() => exportToPDF('pdf')}
+                  suppressHydrationWarning
+                >
+                  Export Report
+                </Button>
+                <Button 
+                  leftIcon={<FiDownload />} 
+                  colorScheme="green" 
+                  size="sm" 
+                  onClick={exportToCSV} 
+                  disabled={!selectedProjectId || workItems.length === 0}
+                  suppressHydrationWarning
+                >
+                  Export CSV
+                </Button>
+              </HStack>
             </HStack>
           </Flex>
 
@@ -693,72 +761,145 @@ export default function WorkPlanReportPage() {
             <CardBody>
               <Text fontWeight="semibold" mb={4} color="blue.600">Work Items Table</Text>
               
-              {/* Filters */}
-              <HStack spacing={4} mb={4} wrap="wrap">
-                <Input
-                  placeholder="Cari task/package/resource/notes..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  maxW="300px"
-                  suppressHydrationWarning
-                />
-                <Select
-                  placeholder="Filter Package"
-                  value={packageFilter}
-                  onChange={(e) => setPackageFilter(e.target.value)}
-                  maxW="200px"
-                  suppressHydrationWarning
-                >
-                  <option value="Pelayanan Umum">Pelayanan Umum</option>
-                  <option value="Survey & Estimasi">Survey & Estimasi</option>
-                </Select>
-                <Select
-                  placeholder="Filter Resource"
-                  value={resourceFilter}
-                  onChange={(e) => setResourceFilter(e.target.value)}
-                  maxW="200px"
-                  suppressHydrationWarning
-                >
-                  <option value="test">test</option>
-                  <option value="Tim Survey">Tim Survey</option>
-                </Select>
-                <Select placeholder="Semua" maxW="150px" suppressHydrationWarning>
-                  <option value="planned">Planned</option>
-                  <option value="progress">In Progress</option>
-                  <option value="completed">Completed</option>
-                </Select>
-                <HStack>
-                  <Text fontSize="sm">Start:</Text>
-                  <Input type="date" size="sm" suppressHydrationWarning />
-                  <Text fontSize="sm">to</Text>
-                  <Input type="date" size="sm" suppressHydrationWarning />
-                  <Text fontSize="sm">Finish:</Text>
-                  <Input type="date" size="sm" suppressHydrationWarning />
-                  <Text fontSize="sm">to</Text>
-                  <Input type="date" size="sm" suppressHydrationWarning />
+              {/* Search & Filters */}
+              <Box mb={6}>
+                <HStack spacing={4} mb={3} wrap="wrap">
+                  <Input
+                    placeholder="🔍 Search work items..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    maxW="350px"
+                    disabled={loading}
+                    suppressHydrationWarning
+                    bg="white"
+                    _placeholder={{ color: 'gray.400' }}
+                  />
+                  
+                  <HStack spacing={2}>
+                    <Text fontSize="sm" color="gray.600" fontWeight="medium">Filters:</Text>
+                    <Select
+                      placeholder="All Packages"
+                      value={packageFilter}
+                      onChange={(e) => setPackageFilter(e.target.value)}
+                      maxW="160px"
+                      disabled={loading}
+                      size="sm"
+                      suppressHydrationWarning
+                      bg="white"
+                    >
+                      <option value="A">Package A</option>
+                      <option value="B">Package B</option>
+                      <option value="C">Package C</option>
+                    </Select>
+                    
+                    <Select 
+                      placeholder="All Status" 
+                      value={statusFilter}
+                      onChange={(e) => setStatusFilter(e.target.value)}
+                      maxW="160px" 
+                      disabled={loading}
+                      size="sm"
+                      suppressHydrationWarning
+                      bg="white"
+                    >
+                      <option value="PLANNED">Planned</option>
+                      <option value="IN_PROGRESS">In Progress</option>
+                      <option value="COMPLETED">Completed</option>
+                      <option value="ON_HOLD">On Hold</option>
+                    </Select>
+                  </HStack>
+                  
+                  {/* Clear Filters Button */}
+                  {(searchTerm || packageFilter || statusFilter) && (
+                    <Button 
+                      size="sm" 
+                      variant="ghost" 
+                      onClick={() => {
+                        setSearchTerm('')
+                        setPackageFilter('')
+                        setStatusFilter('')
+                      }}
+                      color="gray.500"
+                    >
+                      Clear Filters
+                    </Button>
+                  )}
                 </HStack>
-              </HStack>
+              </Box>
 
-              {/* Stats */}
-              <HStack spacing={6} mb={4} p={3} bg="gray.50" borderRadius="md">
-                <Text fontSize="sm">
-                  <Text as="span" fontWeight="bold" color="blue.600">Total Tasks:</Text> {totalTasks}
-                </Text>
-                <Text fontSize="sm">
-                  <Text as="span" fontWeight="bold" color="green.600">Avg % Complete:</Text> {avgComplete}%
-                </Text>
-                <Text fontSize="sm">
-                  <Text as="span" fontWeight="bold" color="purple.600">Milestones:</Text> {milestones}
-                </Text>
-                <Text fontSize="sm">
-                  <Text as="span" fontWeight="bold" color="red.600">Conflicted Tasks:</Text> {conflicts}
-                </Text>
-              </HStack>
+              {/* Statistics */}
+              {workItems.length > 0 && (
+                <Box mb={6} p={4} bg="gradient(to-r, gray.50, gray.100)" borderRadius="xl" border="1px solid" borderColor="gray.200">
+                  <Text fontSize="sm" fontWeight="semibold" color="gray.700" mb={3}>
+                    Project Statistics
+                  </Text>
+                  <HStack spacing={8} wrap="wrap">
+                    <VStack spacing={1} align="start">
+                      <Text fontSize="2xl" fontWeight="bold" color="blue.600">{totalTasks}</Text>
+                      <Text fontSize="xs" color="gray.600" fontWeight="medium">TOTAL TASKS</Text>
+                    </VStack>
+                    <VStack spacing={1} align="start">
+                      <Text fontSize="2xl" fontWeight="bold" color="green.600">{avgComplete}%</Text>
+                      <Text fontSize="xs" color="gray.600" fontWeight="medium">AVG COMPLETE</Text>
+                    </VStack>
+                    <VStack spacing={1} align="start">
+                      <Text fontSize="2xl" fontWeight="bold" color="purple.600">{milestones}</Text>
+                      <Text fontSize="xs" color="gray.600" fontWeight="medium">MILESTONES</Text>
+                    </VStack>
+                    <VStack spacing={1} align="start">
+                      <Text fontSize="2xl" fontWeight="bold" color={conflicts > 0 ? "red.600" : "green.600"}>
+                        {conflicts}
+                      </Text>
+                      <Text fontSize="xs" color="gray.600" fontWeight="medium">CONFLICTS</Text>
+                    </VStack>
+                  </HStack>
+                </Box>
+              )}
 
               {loading ? (
                 <Flex justify="center" py={10}>
                   <Spinner size="xl" color="blue.500" />
                 </Flex>
+              ) : !selectedProjectId ? (
+                <Box textAlign="center" py={16}>
+                  <Box mb={6}>
+                    <Text fontSize="2xl" color="gray.400" mb={2}>📋</Text>
+                    <Text fontSize="lg" fontWeight="semibold" color="gray.600" mb={2}>
+                      Welcome to Work Plan & Report
+                    </Text>
+                    <Text fontSize="sm" color="gray.500" maxW="md" mx="auto">
+                      Select or create a project from the dropdown above to start managing work items, 
+                      generate reports, and track project progress.
+                    </Text>
+                  </Box>
+                </Box>
+              ) : workItems.length === 0 ? (
+                <Box textAlign="center" py={16}>
+                  <Box mb={6}>
+                    <Text fontSize="2xl" color="blue.400" mb={2}>🚀</Text>
+                    <Text fontSize="lg" fontWeight="semibold" color="gray.600" mb={2}>
+                      Ready to Start!
+                    </Text>
+                    <Text fontSize="sm" color="gray.500" maxW="md" mx="auto" mb={4}>
+                      Project "{selectedProject?.projectName}" is ready. Generate work items from templates 
+                      or add them manually to begin tracking progress.
+                    </Text>
+                    <HStack justify="center" spacing={3} mt={6}>
+                      <TemplateGenerator 
+                        projectId={selectedProjectId}
+                        onWorkItemsGenerated={fetchWorkItems}
+                      />
+                      <Button 
+                        leftIcon={<FiPlus />} 
+                        colorScheme="blue" 
+                        size="sm" 
+                        variant="outline"
+                      >
+                        Add Manual Item
+                      </Button>
+                    </HStack>
+                  </Box>
+                </Box>
               ) : (
                 <WorkPlanTable workItems={filteredItems} onUpdate={fetchWorkItems} />
               )}
@@ -766,6 +907,6 @@ export default function WorkPlanReportPage() {
           </Card>
         </VStack>
       </Container>
-    </MainLayout>
+    </ClientOnlyLayout>
   )
 }

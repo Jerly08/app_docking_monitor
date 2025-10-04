@@ -1,0 +1,44 @@
+CONTENT UNTUK DITAMBAHKAN KE TEMPLATE WORD
+=========================================
+
+Buka file "Kop Surat PT PID - Kemayoran.docx" dan tambahkan content berikut setelah kop surat:
+
+                                {reportTitle}
+                    {projectName} - {vesselName}
+                              Tanggal: {reportDate}
+
+RINGKASAN PROYEK
+================
+Nama Kapal      : {vesselInfo.name}
+Pemilik         : {vesselInfo.owner}
+LOA             : {vesselInfo.loa}
+LPP             : {vesselInfo.lpp}
+Breadth         : {vesselInfo.breadth}
+DWT/GT          : {vesselInfo.dwtGt}
+Dok Type        : {vesselInfo.dokType}
+Status          : {vesselInfo.dockPeriod}
+
+STATISTIK PROYEK
+================
+Total Tasks     : {totalTasks}
+Avg Progress    : {avgCompletion}%
+Milestones      : {milestones}
+Conflicts       : {conflictedTasks}
+
+DETAIL WORK ITEMS
+================
+{#workItems}
+{number}. {taskName}
+   - Progress: {progress}
+   - Resource: {resources}
+   - Duration: {duration}
+   - Package: {package}
+   - Status: {status}
+   - Start: {startDate} | Finish: {finishDate}
+
+{/workItems}
+
+====================================
+Dibuat oleh: {generatedBy}
+Tanggal: {generatedDate}
+{companyName}

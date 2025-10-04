@@ -21,9 +21,9 @@ const server = createServer(app);
 const prisma = new PrismaClient();
 
 // Environment variables
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 4001;
 const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production-use-at-least-32-characters';
-const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || 'http://localhost:3000';
+const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || 'http://localhost:3001';
 
 // Socket.IO setup
 const io = new SocketServer(server, {
