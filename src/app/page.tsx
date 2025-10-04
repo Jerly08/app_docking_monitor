@@ -1,51 +1,27 @@
 'use client'
 
-import { useState } from 'react'
-import MainLayout from '@/components/Layout/MainLayout'
-import DashboardModule from '@/components/Modules/Dashboard'
-import ProjectManagementModule from '@/components/Modules/ProjectManagement'
-import SurveyEstimationModule from '@/components/Modules/SurveyEstimation'
-import QuotationNegotiationModule from '@/components/Modules/QuotationNegotiation'
-import ProcurementVendorModule from '@/components/Modules/ProcurementVendor'
-import WarehouseMaterialModule from '@/components/Modules/WarehouseMaterial'
-import TechnicianWorkModule from '@/components/Modules/TechnicianWork'
-import FinancePaymentModule from '@/components/Modules/FinancePayment'
-import ReportingModule from '@/components/Modules/Reporting'
-
-const renderModule = (currentModule: string) => {
-  switch (currentModule) {
-    case 'dashboard':
-      return <DashboardModule />
-    case 'project-management':
-      return <ProjectManagementModule />
-    case 'survey-estimation':
-      return <SurveyEstimationModule />
-    case 'quotation-negotiation':
-      return <QuotationNegotiationModule />
-    case 'procurement-vendor':
-      return <ProcurementVendorModule />
-    case 'warehouse-material':
-      return <WarehouseMaterialModule />
-    case 'technician-work':
-      return <TechnicianWorkModule />
-    case 'finance-payment':
-      return <FinancePaymentModule />
-    case 'reporting':
-      return <ReportingModule />
-    default:
-      return <DashboardModule />
-  }
-}
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@/contexts/AuthContext'
+import { Box, Spinner, Center } from '@chakra-ui/react'
 
 export default function Home() {
-  const [currentModule, setCurrentModule] = useState('dashboard')
+  const router = useRouter()
+  const { isAuthenticated, isLoading } = useAuth()
+
+  useEffect(() => {
+    if (!isLoading) {
+      if (isAuthenticated) {
+        router.push('/dashboard')
+      } else {
+        router.push('/login')
+      }
+    }
+  }, [isAuthenticated, isLoading, router])
 
   return (
-    <MainLayout 
-      currentModule={currentModule}
-      onModuleChange={setCurrentModule}
-    >
-      {renderModule(currentModule)}
-    </MainLayout>
+    <Center h="100vh">
+      <Spinner size="xl" color="blue.500" />
+    </Center>
   )
 }

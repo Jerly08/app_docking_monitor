@@ -1,0 +1,94 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// User Model for Authentication & Role Management
+model User {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  email     String   @unique
+  password  String   // hashed with bcrypt
+  role      String   @default("USER") // ADMIN, MANAGER, USER
+  fullName  String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+// Hierarchical WorkItem Model for Task Management
+model WorkItem {
+  id              String     @id
+  number          Int?
+  category        String?
+  title           String     @db.Text
+  description     String?    @db.Text
+  volume          Int?
+  unit            String?
+  status          String?
+  completion      Int        @default(0)
+  imageUrl        String?
+  
+  // Hierarchical structure
+  parentId        String?
+  parent          WorkItem?  @relation("WorkItemHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children        WorkItem[] @relation("WorkItemHierarchy")
+  
+  // Project management fields
+  package         String?
+  durationDays    Int?
+  startDate       String?
+  finishDate      String?
+  resourceNames   String     @default("")
+  isMilestone     Boolean    @default(false)
+  dependsOnIds    Json?
+  
+  // Relations
+  tasks           Task[]
+  
+  // Timestamps
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  @@map("work_items")
+}
+
+// Task Model for detailed project planning
+model Task {
+  id              String   @id @default(cuid())
+  name            String
+  description     String?  @db.Text
+  startDate       DateTime
+  endDate         DateTime
+  status          String   @default("PLANNED") // PLANNED, IN_PROGRESS, COMPLETED, CANCELLED
+  priority        String   @default("MEDIUM")  // LOW, MEDIUM, HIGH, CRITICAL
+  assignedTo      String?
+  estimatedHours  Int?
+  actualHours     Int?
+  completion      Int      @default(0)
+  
+  // Relations
+  workItemId      String?
+  workItem        WorkItem? @relation(fields: [workItemId], references: [id])
+  
+  // Project fields
+  resourceNames   String   @default("")
+  dependencies    Json?
+  tags            Json?
+  
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("tasks")
+}
+

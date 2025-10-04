@@ -14,6 +14,11 @@ import {
   BreadcrumbLink,
   useColorModeValue,
   Badge,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
+  MenuDivider,
 } from '@chakra-ui/react'
 import React, { ReactNode, useState } from 'react'
 import {
@@ -28,7 +33,12 @@ import {
   FiMenu,
   FiBell,
   FiSettings,
+  FiLogOut,
+  FiUser,
+  FiChevronDown,
 } from 'react-icons/fi'
+import { useAuth } from '@/contexts/AuthContext'
+import { useRouter } from 'next/navigation'
 
 interface NavItemProps {
   icon: React.ElementType
@@ -73,25 +83,32 @@ interface MainLayoutProps {
 
 const modules = [
   { id: 'dashboard', name: 'Dashboard', icon: FiHome },
-  { id: 'project-management', name: 'Manajemen Proyek & Nota Dinas', icon: FiHome },
-  { id: 'survey-estimation', name: 'Survey & Estimasi', icon: FiSearch },
-  { id: 'quotation-negotiation', name: 'Penawaran & Negosiasi', icon: FiDollarSign },
-  { id: 'procurement-vendor', name: 'Procurement & Vendor', icon: FiShoppingCart },
-  { id: 'warehouse-material', name: 'Gudang & Material', icon: FiPackage },
-  { id: 'technician-work', name: 'Teknisi & Pelaksanaan', icon: FiUsers },
-  { id: 'finance-payment', name: 'Finance & Payment', icon: FiCreditCard },
-  { id: 'reporting', name: 'Reporting', icon: FiBarChart },
+  { id: 'master-data', name: 'Master Data & Bank Data', icon: FiUsers },
+  { id: 'work-plan-report', name: 'Work Plan & Report', icon: FiBarChart },
+  // Hidden modules - uncomment when ready to use
+  // { id: 'project-management', name: 'Manajemen Proyek & Nota Dinas', icon: FiHome },
+  // { id: 'survey-estimation', name: 'Survey & Estimasi', icon: FiSearch },
+  // { id: 'quotation-negotiation', name: 'Penawaran & Negosiasi', icon: FiDollarSign },
+  // { id: 'procurement-vendor', name: 'Procurement & Vendor', icon: FiShoppingCart },
+  // { id: 'warehouse-material', name: 'Gudang & Material', icon: FiPackage },
+  // { id: 'technician-work', name: 'Teknisi & Pelaksanaan', icon: FiUsers },
+  // { id: 'finance-payment', name: 'Finance & Payment', icon: FiCreditCard },
+  // { id: 'reporting', name: 'Reporting', icon: FiBarChart },
 ]
 
 export default function MainLayout({ children, currentModule = 'dashboard', breadcrumbs, onModuleChange }: MainLayoutProps) {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [activeModule, setActiveModule] = useState(currentModule)
+  const { user, logout } = useAuth()
+  const router = useRouter()
   
   const handleModuleClick = (moduleId: string) => {
     setActiveModule(moduleId)
     if (onModuleChange) {
       onModuleChange(moduleId)
     }
+    // Navigate to the module page
+    router.push(`/${moduleId}`)
   }
 
   const bgColor = useColorModeValue('white', 'gray.800')
@@ -198,11 +215,34 @@ export default function MainLayout({ children, currentModule = 'dashboard', brea
                 borderRadius="full"
               />
             </Button>
-            <Avatar size="sm" name="User Admin" />
-            <VStack spacing={0} align="start">
-              <Text fontSize="sm" fontWeight="medium">Admin User</Text>
-              <Text fontSize="xs" color="gray.500">Administrator</Text>
-            </VStack>
+            
+            <Menu>
+              <MenuButton as={Button} variant="ghost" size="sm" rightIcon={<FiChevronDown />}>
+                <HStack spacing={3}>
+                  <Avatar size="sm" name={user?.fullName || user?.username} />
+                  <VStack spacing={0} align="start">
+                    <Text fontSize="sm" fontWeight="medium">
+                      {user?.fullName || user?.username}
+                    </Text>
+                    <Text fontSize="xs" color="gray.500">
+                      {user?.role}
+                    </Text>
+                  </VStack>
+                </HStack>
+              </MenuButton>
+              <MenuList>
+                <MenuItem icon={<FiUser />}>
+                  Profile
+                </MenuItem>
+                <MenuItem icon={<FiSettings />}>
+                  Settings
+                </MenuItem>
+                <MenuDivider />
+                <MenuItem icon={<FiLogOut />} onClick={logout} color="red.500">
+                  Logout
+                </MenuItem>
+              </MenuList>
+            </Menu>
           </HStack>
         </Flex>
 
