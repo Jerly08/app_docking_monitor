@@ -20,7 +20,7 @@ import {
   MenuItem,
   MenuDivider,
 } from '@chakra-ui/react'
-import React, { ReactNode, useState } from 'react'
+import React, { ReactNode, useState, useEffect } from 'react'
 import {
   FiHome,
   FiSearch,
@@ -36,6 +36,7 @@ import {
   FiLogOut,
   FiUser,
   FiChevronDown,
+  FiPhone,
 } from 'react-icons/fi'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
@@ -62,6 +63,7 @@ const NavItem = ({ icon, children, isActive, onClick, badge }: NavItemProps) => 
       fontWeight={isActive ? 'semibold' : 'normal'}
       fontSize="sm"
       position="relative"
+      suppressHydrationWarning
     >
       <Icon as={icon} mr={3} boxSize={4} />
       <Text flex="1" textAlign="left">{children}</Text>
@@ -85,6 +87,7 @@ const modules = [
   { id: 'dashboard', name: 'Dashboard', icon: FiHome },
   { id: 'master-data', name: 'Master Data & Bank Data', icon: FiUsers },
   { id: 'work-plan-report', name: 'Work Plan & Report', icon: FiBarChart },
+  { id: 'customer-contacts', name: 'Customer Contacts', icon: FiPhone },
   // Hidden modules - uncomment when ready to use
   // { id: 'project-management', name: 'Manajemen Proyek & Nota Dinas', icon: FiHome },
   // { id: 'survey-estimation', name: 'Survey & Estimasi', icon: FiSearch },
@@ -99,8 +102,14 @@ const modules = [
 export default function MainLayout({ children, currentModule = 'dashboard', breadcrumbs, onModuleChange }: MainLayoutProps) {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [activeModule, setActiveModule] = useState(currentModule)
+  const [isMounted, setIsMounted] = useState(false)
   const { user, logout } = useAuth()
   const router = useRouter()
+  
+  // Prevent hydration mismatch by ensuring client-side mounting
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
   
   const handleModuleClick = (moduleId: string) => {
     setActiveModule(moduleId)
@@ -114,6 +123,25 @@ export default function MainLayout({ children, currentModule = 'dashboard', brea
   const bgColor = useColorModeValue('white', 'gray.800')
   const borderColor = useColorModeValue('gray.200', 'gray.700')
   const sidebarBg = useColorModeValue('gray.50', 'gray.900')
+  
+  // Prevent flash during hydration
+  if (!isMounted) {
+    return (
+      <Flex h="100vh">
+        <Box w="280px" bg={sidebarBg} borderRight="1px" borderColor={borderColor}>
+          <Flex h="60px" align="center" px={4} borderBottom="1px" borderColor={borderColor}>
+            <Text fontSize="lg" fontWeight="bold" color="blue.600">Docking Monitor</Text>
+          </Flex>
+        </Box>
+        <Flex flex="1" direction="column">
+          <Flex h="60px" bg={bgColor} borderBottom="1px" borderColor={borderColor} />
+          <Box flex="1" overflow="auto" bg={useColorModeValue('gray.50', 'gray.900')}>
+            {children}
+          </Box>
+        </Flex>
+      </Flex>
+    )
+  }
 
   return (
     <Flex h="100vh">
@@ -144,6 +172,7 @@ export default function MainLayout({ children, currentModule = 'dashboard', brea
             size="sm"
             variant="ghost"
             onClick={() => setIsCollapsed(!isCollapsed)}
+            suppressHydrationWarning
           >
             <Icon as={FiMenu} />
           </Button>
@@ -203,7 +232,7 @@ export default function MainLayout({ children, currentModule = 'dashboard', brea
           </Box>
 
           <HStack spacing={4}>
-            <Button size="sm" variant="ghost" position="relative">
+            <Button size="sm" variant="ghost" position="relative" suppressHydrationWarning>
               <Icon as={FiBell} />
               <Box
                 position="absolute"
@@ -217,7 +246,7 @@ export default function MainLayout({ children, currentModule = 'dashboard', brea
             </Button>
             
             <Menu>
-              <MenuButton as={Button} variant="ghost" size="sm" rightIcon={<FiChevronDown />}>
+              <MenuButton as={Button} variant="ghost" size="sm" rightIcon={<FiChevronDown />} suppressHydrationWarning>
                 <HStack spacing={3}>
                   <Avatar size="sm" name={user?.fullName || user?.username} />
                   <VStack spacing={0} align="start">

@@ -44,6 +44,8 @@ export default function LoginPage() {
   // ✅ Move all hooks BEFORE any conditional returns
   const bgColor = useColorModeValue('gray.50', 'gray.900')
   const cardBg = useColorModeValue('white', 'gray.800')
+  const headingColor = useColorModeValue('gray.900', 'white')
+  const textColor = useColorModeValue('gray.600', 'gray.400')
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -105,10 +107,10 @@ export default function LoginPage() {
                 <FiAnchor size="48px" />
               </Box>
               <Stack spacing={2} textAlign="center">
-                <Heading size="lg" color={useColorModeValue('gray.900', 'white')}>
+                <Heading size="lg" color={headingColor}>
                   Aplikasi Monitoring Proyek Docking
                 </Heading>
-                <Text color={useColorModeValue('gray.600', 'gray.400')} fontSize="lg">
+                <Text color={textColor} fontSize="lg">
                   Sistem Manajemen & Monitoring Pekerjaan Docking Kapal
                 </Text>
               </Stack>
@@ -124,7 +126,7 @@ export default function LoginPage() {
                         <Heading size="md" textAlign="center">
                           Sign In to Your Account
                         </Heading>
-                        <Text textAlign="center" color={useColorModeValue('gray.600', 'gray.400')}>
+                        <Text textAlign="center" color={textColor}>
                           Enter your credentials to access the system
                         </Text>
                       </Stack>
@@ -196,7 +198,7 @@ export default function LoginPage() {
 
                 {/* Demo Credentials */}
                 <VStack spacing={3}>
-                  <Text fontSize="sm" color={useColorModeValue('gray.600', 'gray.400')} textAlign="center">
+                  <Text fontSize="sm" color={textColor} textAlign="center">
                     Demo Credentials:
                   </Text>
                   <VStack spacing={2} fontSize="sm">
@@ -219,7 +221,7 @@ export default function LoginPage() {
           </Stack>
 
           {/* Footer */}
-          <Text fontSize="sm" color={useColorModeValue('gray.600', 'gray.400')} textAlign="center">
+          <Text fontSize="sm" color={textColor} textAlign="center">
             © 2024 Aplikasi Monitoring Proyek Docking. All rights reserved.
           </Text>
         </Stack>

@@ -83,6 +83,11 @@ const WorkPlanTable = ({ workItems, onUpdate }: { workItems: WorkItem[], onUpdat
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
   const [editingCell, setEditingCell] = useState<{ id: string, field: string } | null>(null)
   const [editValue, setEditValue] = useState('')
+  const [isMounted, setIsMounted] = useState(false)
+  
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   const toggleExpanded = (id: string) => {
     const newExpanded = new Set(expandedRows)
@@ -331,15 +336,21 @@ const WorkPlanTable = ({ workItems, onUpdate }: { workItems: WorkItem[], onUpdat
             </Text>
           </Td>
           <Td>
-            {(() => {
-              // Use deterministic logic based on item.id to avoid hydration mismatch
-              const isConflict = item.id.length % 3 === 0 || item.completion < 50
-              return (
-                <Badge colorScheme={isConflict ? 'red' : 'green'} size="sm">
-                  {isConflict ? 'Hapus' : 'OK'}
-                </Badge>
-              )
-            })()}
+            {isMounted ? (
+              (() => {
+                // Use deterministic logic based on item.id to avoid hydration mismatch
+                const isConflict = item.id.length % 3 === 0 || item.completion < 50
+                return (
+                  <Badge colorScheme={isConflict ? 'red' : 'green'} size="sm">
+                    {isConflict ? 'Hapus' : 'OK'}
+                  </Badge>
+                )
+              })()
+            ) : (
+              <Badge colorScheme="gray" size="sm">
+                Loading...
+              </Badge>
+            )}
           </Td>
           <Td>
             <HStack spacing={1}>
@@ -504,13 +515,96 @@ export default function WorkPlanReportPage() {
     fetchWorkItems()
   }, [])
 
-  const exportToPDF = () => {
-    toast({
-      title: 'Export PDF',
-      description: 'PDF generation feature will be implemented',
-      status: 'info',
-      duration: 3000
-    })
+  const exportToPDF = async () => {
+    try {
+      toast({
+        title: 'Generating Docking Report...',
+        description: 'Please wait while we generate your docking report using company template',
+        status: 'info',
+        duration: 2000
+      })
+
+      const response = await fetch('/api/reports/work-plan', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+        },
+        body: JSON.stringify({
+          projectName: 'MT. FERIMAS SEJAHTERA',
+          workItems: workItems
+        })
+      })
+
+      if (response.ok) {
+        const blob = await response.blob()
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `Docking_Report_${new Date().toISOString().split('T')[0]}.docx`
+        a.click()
+        URL.revokeObjectURL(url)
+
+        toast({
+          title: 'Docking Report Generated',
+          description: 'Laporan docking berhasil dibuat menggunakan template kop surat perusahaan',
+          status: 'success',
+          duration: 4000
+        })
+      } else {
+        throw new Error('Failed to generate report')
+      }
+    } catch (error) {
+      console.error('Error generating PDF:', error)
+      toast({
+        title: 'Error',
+        description: 'Failed to generate PDF report. Please try again.',
+        status: 'error',
+        duration: 3000
+      })
+    }
+  }
+
+  const downloadTemplate = async () => {
+    try {
+      toast({
+        title: 'Downloading Template...',
+        description: 'Please wait while we prepare the template file',
+        status: 'info',
+        duration: 2000
+      })
+
+      const response = await fetch('/api/reports/work-plan', {
+        method: 'GET'
+      })
+
+      if (response.ok) {
+        const blob = await response.blob()
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = 'Template_Docking_Report.docx'
+        a.click()
+        URL.revokeObjectURL(url)
+
+        toast({
+          title: 'Template Downloaded',
+          description: 'Silahkan modifikasi template sesuai kebutuhan perusahaan',
+          status: 'success',
+          duration: 4000
+        })
+      } else {
+        throw new Error('Failed to download template')
+      }
+    } catch (error) {
+      console.error('Error downloading template:', error)
+      toast({
+        title: 'Error',
+        description: 'Failed to download template. Please try again.',
+        status: 'error',
+        duration: 3000
+      })
+    }
   }
 
   const exportToCSV = () => {
@@ -577,10 +671,13 @@ export default function WorkPlanReportPage() {
                 Paste/Import
               </Button>
               <Button leftIcon={<FiFileText />} colorScheme="purple" size="sm" onClick={exportToPDF} suppressHydrationWarning>
-                Generate PDF
+                Generate Docking Report (Word)
               </Button>
               <Button leftIcon={<FiDownload />} colorScheme="green" size="sm" onClick={exportToCSV} suppressHydrationWarning>
                 Export CSV
+              </Button>
+              <Button leftIcon={<FiDownload />} colorScheme="blue" variant="outline" size="sm" onClick={downloadTemplate} suppressHydrationWarning>
+                Download Template
               </Button>
               <Button leftIcon={<FiPlus />} colorScheme="blue" size="sm" suppressHydrationWarning>
                 Tambah Baris
