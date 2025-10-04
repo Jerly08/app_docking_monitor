@@ -195,6 +195,24 @@ const CustomerContacts = () => {
           duration: 3000,
           isClosable: true,
         })
+      } else {
+        // Add new customer
+        const newCustomer: CustomerContact = {
+          ...formData,
+          id: Date.now().toString(),
+          createdAt: new Date().toISOString().split('T')[0],
+          updatedAt: new Date().toISOString().split('T')[0],
+          totalDockings: 0,
+        } as CustomerContact
+        
+        setCustomers([...customers, newCustomer])
+        toast({
+          title: 'Customer Added',
+          description: 'New customer contact has been added successfully.',
+          status: 'success',
+          duration: 3000,
+          isClosable: true,
+        })
         onEditClose()
       } else {
         // Add new customer
@@ -217,23 +235,8 @@ const CustomerContacts = () => {
         onAddClose()
       }
       
-      setFormData({
-        vesselName: '',
-        ownerCompany: '',
-        vesselType: '',
-        grt: 0,
-        loa: 0,
-        lbp: 0,
-        breadth: 0,
-        depth: 0,
-        status: 'ACTIVE',
-        contactPerson: '',
-        phoneNumber: '',
-        email: '',
-        address: '',
-        notes: '',
-      })
-      setSelectedCustomer(null)
+      // Reset form and clear selected customer
+      resetForm()
     } catch (error) {
       toast({
         title: 'Error',
@@ -251,6 +254,37 @@ const CustomerContacts = () => {
     setSelectedCustomer(customer)
     setFormData(customer)
     onEditOpen()
+  }
+
+  const resetForm = () => {
+    setFormData({
+      vesselName: '',
+      ownerCompany: '',
+      vesselType: 'OIL TANKER',
+      grt: 0,
+      loa: 0,
+      lbp: 0,
+      breadth: 0,
+      depth: 0,
+      status: 'ACTIVE',
+      contactPerson: '',
+      phoneNumber: '',
+      email: '',
+      address: '',
+      notes: '',
+    })
+    setSelectedCustomer(null)
+  }
+
+  const handleCancel = () => {
+    // Reset form data and clear selected customer
+    resetForm()
+    // Close appropriate modal
+    if (isAddOpen) {
+      onAddClose()
+    } else if (isEditOpen) {
+      onEditClose()
+    }
   }
 
   const handleDelete = async () => {
@@ -505,7 +539,7 @@ const CustomerContacts = () => {
       </Card>
 
       {/* Add/Edit Customer Modal */}
-      <Modal isOpen={isAddOpen || isEditOpen} onClose={isAddOpen ? onAddClose : onEditClose} size="xl">
+      <Modal isOpen={isAddOpen || isEditOpen} onClose={handleCancel} size="xl">
         <ModalOverlay />
         <ModalContent>
           <form onSubmit={handleSubmit}>
@@ -663,7 +697,7 @@ const CustomerContacts = () => {
               </VStack>
             </ModalBody>
             <ModalFooter>
-              <Button variant="ghost" mr={3} onClick={isAddOpen ? onAddClose : onEditClose}>
+              <Button variant="ghost" mr={3} onClick={handleCancel}>
                 Cancel
               </Button>
               <Button type="submit" colorScheme="blue" isLoading={loading}>
