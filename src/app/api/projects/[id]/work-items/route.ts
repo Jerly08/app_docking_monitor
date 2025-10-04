@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
+import { idGeneratorService } from '@/lib/idGeneratorService'
 
 const prisma = new PrismaClient()
 
@@ -47,12 +48,25 @@ export async function GET(
             subLetter: true
           }
         },
-        children: includeChildren ? {
+        children: {
           include: {
-            template: true,
-            children: true
+            template: {
+              select: {
+                id: true,
+                packageLetter: true,
+                packageName: true,
+                level: true,
+                itemNumber: true,
+                subLetter: true
+              }
+            },
+            children: {
+              include: {
+                template: true
+              }
+            }
           }
-        } : false,
+        },
         parent: {
           select: {
             id: true,
@@ -170,12 +184,16 @@ export async function POST(
       // Multiple work items (bulk create)
       const createdWorkItems = []
       
-      for (const workItemData of body.workItems) {
+      // Generate batch IDs for efficiency
+      const batchIds = await idGeneratorService.generateBatchWorkItemIds(id, body.workItems.length)
+      
+      for (let i = 0; i < body.workItems.length; i++) {
+        const workItemData = body.workItems[i]
         const workItem = await prisma.workItem.create({
           data: {
             ...workItemData,
             projectId: id,
-            id: workItemData.id || `WI-${id}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+            id: workItemData.id || batchIds[i]
           },
           include: {
             template: true,
@@ -193,11 +211,13 @@ export async function POST(
       }, { status: 201 })
     } else {
       // Single work item
+      const workItemId = body.id || await idGeneratorService.generateWorkItemId(id)
+      
       const workItem = await prisma.workItem.create({
         data: {
           ...body,
           projectId: id,
-          id: body.id || `WI-${id}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+          id: workItemId
         },
         include: {
           template: true,

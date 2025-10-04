@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
+import { idGeneratorService } from '@/lib/idGeneratorService'
 
 const prisma = new PrismaClient()
 
@@ -222,9 +223,12 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Generate new ID using the new Work Package format if not provided
+    const workItemId = body.id || await idGeneratorService.generateWorkItemIdNew(body.projectId || 'default', body.parentId)
+    
     const workItem = await prisma.workItem.create({
       data: {
-        id: body.id || `WI-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        id: workItemId,
         title: body.title,
         description: body.description,
         completion: body.completion || 0,

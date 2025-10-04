@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DOCKING REPORT - EXACT REPLICA</title>
+    <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            font-size: 10px;
+            line-height: 1.2;
+            color: #000;
+            background: white;
+            padding: 15px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        /* EXACT Header Layout as Reference */
+        .report-header {
+            text-align: center;
+            margin-bottom: 15px;
+            padding: 10px 0;
+        }
+
+        .report-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 3px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .project-subtitle {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        /* EXACT Vessel Info Layout - Two Column as Reference */
+        .vessel-info-section {
+            margin-bottom: 15px;
+        }
+
+        .vessel-info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+            font-size: 9px;
+        }
+
+        .vessel-info-table td {
+            padding: 2px 4px;
+            vertical-align: top;
+        }
+
+        .vessel-info-label {
+            font-weight: bold;
+            width: 80px;
+        }
+
+        .vessel-info-colon {
+            width: 10px;
+            text-align: center;
+        }
+
+        .vessel-info-value {
+            width: 120px;
+        }
+
+        .vessel-info-spacer {
+            width: 30px;
+        }
+
+        /* EXACT Table Structure - Perfect Match to Reference */
+        .main-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 2px solid #000;
+            font-size: 9px;
+        }
+
+        .main-table th,
+        .main-table td {
+            border: 1px solid #000;
+            padding: 4px 3px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        /* EXACT Header Row */
+        .main-table thead th {
+            background-color: #ffffff;
+            font-weight: bold;
+            text-align: center;
+            font-size: 10px;
+            padding: 6px 3px;
+            border: 2px solid #000;
+        }
+
+        /* EXACT Column Widths as Reference */
+        .col-no { 
+            width: 4%; 
+            text-align: center; 
+            font-weight: bold;
+        }
+        
+        .col-uraian { 
+            width: 46%; 
+            text-align: left;
+        }
+        
+        .col-vol { 
+            width: 6%; 
+            text-align: center; 
+        }
+        
+        .col-sat { 
+            width: 6%; 
+            text-align: center; 
+        }
+        
+        .col-keterangan { 
+            width: 12%; 
+            text-align: center; 
+        }
+        
+        .col-lampiran { 
+            width: 26%; 
+            text-align: center;
+            padding: 2px;
+        }
+
+        /* EXACT Package Header Row */
+        .package-header {
+            background-color: #ffffff !important;
+            font-weight: bold;
+        }
+
+        .package-header td {
+            border: 2px solid #000 !important;
+            font-size: 10px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        /* Work Item Rows */
+        .work-item-row td {
+            border: 1px solid #000;
+            vertical-align: top;
+        }
+
+        .work-item-number {
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .work-item-description {
+            text-align: left;
+            line-height: 1.3;
+        }
+
+        /* Child/Realization Items */
+        .realization-row {
+            background-color: #f9f9f9;
+        }
+
+        .realization-row td {
+            border: 1px solid #000;
+            font-size: 8px;
+        }
+
+        .realization-text {
+            font-style: italic;
+            text-align: left;
+            padding-left: 10px;
+        }
+
+        /* EXACT Status Styling */
+        .status-complete {
+            background-color: #d4edda;
+            color: #155724;
+            font-weight: bold;
+            text-align: center;
+            font-size: 8px;
+            padding: 2px;
+            border-radius: 2px;
+        }
+
+        .status-in-progress {
+            background-color: #fff3cd;
+            color: #856404;
+            font-weight: bold;
+            text-align: center;
+            font-size: 8px;
+            padding: 2px;
+            border-radius: 2px;
+        }
+
+        /* EXACT Image Cell */
+        .image-cell {
+            text-align: center;
+            padding: 2px;
+            vertical-align: middle;
+        }
+
+        .work-image {
+            max-width: 100%;
+            max-height: 60px;
+            border: 1px solid #999;
+            border-radius: 2px;
+        }
+
+        .image-placeholder {
+            display: inline-block;
+            width: 80px;
+            height: 50px;
+            background-color: #f0f0f0;
+            border: 1px solid #999;
+            border-radius: 2px;
+            line-height: 50px;
+            text-align: center;
+            font-size: 8px;
+            color: #666;
+            background-image: url('data:image/svg+xml;charset=utf-8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="%23666"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>');
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        /* Ensure ALL borders are solid black */
+        .main-table,
+        .main-table th,
+        .main-table td {
+            border-color: #000 !important;
+            border-style: solid !important;
+        }
+
+        /* Page break optimization */
+        .package-header {
+            page-break-after: avoid;
+        }
+
+        .work-item-row {
+            page-break-inside: avoid;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- EXACT Header as Reference -->
+        <div class="report-header">
+            <div class="report-title">DOCKING REPORT</div>
+            <div class="project-subtitle">MT. FERIMAS SEJAHTERA / TAHUN 2025</div>
+        </div>
+
+        <!-- EXACT Vessel Information Layout -->
+        <div class="vessel-info-section">
+            <table class="vessel-info-table">
+                <tr>
+                    <td class="vessel-info-label"><strong>Nama Kapal</strong></td>
+                    <td class="vessel-info-colon">:</td>
+                    <td class="vessel-info-value">MT. FERIMAS SEJAHTERA</td>
+                    <td class="vessel-info-spacer"></td>
+                    <td class="vessel-info-label"><strong>Pemilik</strong></td>
+                    <td class="vessel-info-colon">:</td>
+                    <td class="vessel-info-value">PT. Indoline Incomekita</td>
+                </tr>
+                <tr>
+                    <td class="vessel-info-label"><strong>Ukuran utama</strong></td>
+                    <td class="vessel-info-colon"></td>
+                    <td class="vessel-info-value"></td>
+                    <td class="vessel-info-spacer"></td>
+                    <td class="vessel-info-label"><strong>Tipe</strong></td>
+                    <td class="vessel-info-colon">:</td>
+                    <td class="vessel-info-value">OIL TANKER</td>
+                </tr>
+                <tr>
+                    <td class="vessel-info-label">&nbsp;&nbsp;&nbsp;LOA</td>
+                    <td class="vessel-info-colon">:</td>
+                    <td class="vessel-info-value">64.02 meter</td>
+                    <td class="vessel-info-spacer"></td>
+                    <td class="vessel-info-label"><strong>GRT</strong></td>
+                    <td class="vessel-info-colon">:</td>
+                    <td class="vessel-info-value">762 GT</td>
+                </tr>
+                <tr>
+                    <td class="vessel-info-label">&nbsp;&nbsp;&nbsp;LBP</td>
+                    <td class="vessel-info-colon">:</td>
+                    <td class="vessel-info-value">59.90 meter</td>
+                    <td class="vessel-info-spacer"></td>
+                    <td class="vessel-info-label"><strong>Status</strong></td>
+                    <td class="vessel-info-colon">:</td>
+                    <td class="vessel-info-value">SPECIAL SURVEY</td>
+                </tr>
+                <tr>
+                    <td class="vessel-info-label">&nbsp;&nbsp;&nbsp;BM</td>
+                    <td class="vessel-info-colon">:</td>
+                    <td class="vessel-info-value">10.00 meter</td>
+                    <td class="vessel-info-spacer"></td>
+                    <td class="vessel-info-label"></td>
+                    <td class="vessel-info-colon"></td>
+                    <td class="vessel-info-value"></td>
+                </tr>
+                <tr>
+                    <td class="vessel-info-label">&nbsp;&nbsp;&nbsp;T</td>
+                    <td class="vessel-info-colon">:</td>
+                    <td class="vessel-info-value">4.50 meter</td>
+                    <td class="vessel-info-spacer"></td>
+                    <td class="vessel-info-label"></td>
+                    <td class="vessel-info-colon"></td>
+                    <td class="vessel-info-value"></td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- EXACT Main Table -->
+        <table class="main-table">
+            <thead>
+                <tr>
+                    <th class="col-no">NO.</th>
+                    <th class="col-uraian">URAIAN - PEKERJAAN</th>
+                    <th class="col-vol">VOL</th>
+                    <th class="col-sat">SAT</th>
+                    <th class="col-keterangan">KETERANGAN</th>
+                    <th class="col-lampiran">LAMPIRAN</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Package Header Row - EXACT as reference -->
+                <tr class="package-header">
+                    <td class="col-no"><strong>A</strong></td>
+                    <td class="col-uraian"><strong>PELAYANAN UMUM</strong></td>
+                    <td class="col-vol"></td>
+                    <td class="col-sat"></td>
+                    <td class="col-keterangan"></td>
+                    <td class="col-lampiran"></td>
+                </tr>
+
+                <!-- Work Item 1 - EXACT as reference -->
+                <tr class="work-item-row">
+                    <td class="col-no work-item-number">1</td>
+                    <td class="col-uraian work-item-description">Setibanya di muara, kapal dipandu masuk perairan dock dibantu 1 (satu) tugboat.</td>
+                    <td class="col-vol">1</td>
+                    <td class="col-sat">ls</td>
+                    <td class="col-keterangan"></td>
+                    <td class="col-lampiran image-cell">
+                        <div class="image-placeholder">📷</div>
+                    </td>
+                </tr>
+
+                <!-- Realization 1 - EXACT as reference -->
+                <tr class="realization-row">
+                    <td class="col-no"></td>
+                    <td class="col-uraian realization-text">
+                        <strong>Realisasi :</strong><br>
+                        Selesai docking dipandu kembali keluar dari area Galangan Surya.<br>
+                        Selesai docking dipandu kembali keluar dari area Galangan Surya.<br>
+                        Ket : Masuk area dock pada 23 Agustus 2025 menggunakan 1 kapal pandu<br>
+                        Naik dock pada 23 Agustus 2025 menggunakan 1 kapal pandu<br>
+                        Kapal turun dock pada 07 September 2025 menggunakan 1 kapal pandu<br>
+                        Keluar area dock pada 08 September 2025 menggunakan 1 kapal pandu
+                    </td>
+                    <td class="col-vol">1</td>
+                    <td class="col-sat">set</td>
+                    <td class="col-keterangan">
+                        <span class="status-complete">SELESAI 100%</span>
+                    </td>
+                    <td class="col-lampiran image-cell">
+                        <div class="image-placeholder">📷</div>
+                    </td>
+                </tr>
+
+                <!-- Work Item 2 - EXACT as reference -->
+                <tr class="work-item-row">
+                    <td class="col-no work-item-number">2</td>
+                    <td class="col-uraian work-item-description">Assistensi naik/turun dock dan penataan gantil</td>
+                    <td class="col-vol">1</td>
+                    <td class="col-sat">ls</td>
+                    <td class="col-keterangan"></td>
+                    <td class="col-lampiran image-cell">
+                        <div class="image-placeholder">📷</div>
+                    </td>
+                </tr>
+
+                <!-- Realization 2 - EXACT as reference -->
+                <tr class="realization-row">
+                    <td class="col-no"></td>
+                    <td class="col-uraian realization-text">
+                        <strong>Realisasi :</strong><br>
+                        Diberikan fasilitas assistensi naik / turun dock dan penataan gantil
+                    </td>
+                    <td class="col-vol">1</td>
+                    <td class="col-sat">ls</td>
+                    <td class="col-keterangan">
+                        <span class="status-complete">SELESAI 100%</span>
+                    </td>
+                    <td class="col-lampiran image-cell">
+                        <div class="image-placeholder">📷</div>
+                    </td>
+                </tr>
+
+                <!-- Work Item 3 - EXACT as reference -->
+                <tr class="work-item-row">
+                    <td class="col-no work-item-number">3</td>
+                    <td class="col-uraian work-item-description">Sandblasting dan Undocking</td>
+                    <td class="col-vol">1</td>
+                    <td class="col-sat">ls</td>
+                    <td class="col-keterangan"></td>
+                    <td class="col-lampiran image-cell">
+                        <div class="image-placeholder">📷</div>
+                    </td>
+                </tr>
+
+                <!-- Realization 3 - EXACT as reference -->
+                <tr class="realization-row">
+                    <td class="col-no"></td>
+                    <td class="col-uraian realization-text">
+                        <strong>Realisasi :</strong><br>
+                        Diberikan Fasilitas Sandblasting dan Undocking
+                    </td>
+                    <td class="col-vol">1</td>
+                    <td class="col-sat">ls</td>
+                    <td class="col-keterangan">
+                        <span class="status-complete">SELESAI 100%</span>
+                    </td>
+                    <td class="col-lampiran image-cell">
+                        <div class="image-placeholder">📷</div>
+                    </td>
+                </tr>
+
+                <!-- Work Item 4 - EXACT as reference -->
+                <tr class="work-item-row">
+                    <td class="col-no work-item-number">4</td>
+                    <td class="col-uraian work-item-description">Dry docking</td>
+                    <td class="col-vol">14</td>
+                    <td class="col-sat">hr</td>
+                    <td class="col-keterangan"></td>
+                    <td class="col-lampiran image-cell">
+                        <div class="image-placeholder">📷</div>
+                    </td>
+                </tr>
+
+                <!-- Work Item 5 - EXACT as reference -->
+                <tr class="work-item-row">
+                    <td class="col-no work-item-number">5</td>
+                    <td class="col-uraian work-item-description">Diberikan fasilitas Dry Docking (Keluar masuk dock / tempat berlabuh)<br>
+                    Kapal naik dock tanggal 23 Agustus 2025<br>
+                    Kapal turun dock tanggal 07 September 2025</td>
+                    <td class="col-vol">15</td>
+                    <td class="col-sat">hr</td>
+                    <td class="col-keterangan">
+                        <span class="status-complete">SELESAI 100%</span>
+                    </td>
+                    <td class="col-lampiran image-cell">
+                        <div class="image-placeholder">📷</div>
+                    </td>
+                </tr>
+
+                <!-- Work Item 6 - EXACT as reference -->
+                <tr class="work-item-row">
+                    <td class="col-no work-item-number">6</td>
+                    <td class="col-uraian work-item-description">Diberikan docking report</td>
+                    <td class="col-vol">1</td>
+                    <td class="col-sat">ls</td>
+                    <td class="col-keterangan"></td>
+                    <td class="col-lampiran image-cell">
+                        <div class="image-placeholder">📷</div>
+                    </td>
+                </tr>
+
+                <!-- Realization 6 - EXACT as reference -->
+                <tr class="realization-row">
+                    <td class="col-no"></td>
+                    <td class="col-uraian realization-text">
+                        <strong>Realisasi :</strong><br>
+                        Diberikan Docking Report sebanyak 6 set
+                    </td>
+                    <td class="col-vol">1</td>
+                    <td class="col-sat">ls</td>
+                    <td class="col-keterangan">
+                        <span class="status-complete">SELESAI 100%</span>
+                    </td>
+                    <td class="col-lampiran image-cell">
+                        <div class="image-placeholder">📷</div>
+                    </td>
+                </tr>
+
+                <!-- Work Item 7 - EXACT as reference -->
+                <tr class="work-item-row">
+                    <td class="col-no work-item-number">7</td>
+                    <td class="col-uraian work-item-description">Diberikan fasilitas sandal sebagai berlabuh<br>
+                    Sandal kapal turun dock tanggal 08 September 2025</td>
+                    <td class="col-vol">1</td>
+                    <td class="col-sat">hr</td>
+                    <td class="col-keterangan">
+                        <span class="status-complete">SELESAI 100 %</span>
+                    </td>
+                    <td class="col-lampiran image-cell">
+                        <div class="image-placeholder">📷</div>
+                    </td>
+                </tr>
+
+                <!-- Work Item 8 - EXACT as reference -->
+                <tr class="work-item-row">
+                    <td class="col-no work-item-number">8</td>
+                    <td class="col-uraian work-item-description">Diberikan penjagaan keamanan selama kapal di area dock</td>
+                    <td class="col-vol">16</td>
+                    <td class="col-sat">hr</td>
+                    <td class="col-keterangan"></td>
+                    <td class="col-lampiran image-cell">
+                        <div class="image-placeholder">📷</div>
+                    </td>
+                </tr>
+
+                <!-- Realization 8 - EXACT as reference -->
+                <tr class="realization-row">
+                    <td class="col-no"></td>
+                    <td class="col-uraian realization-text">
+                        <strong>Realisasi :</strong><br>
+                        Diberikan tenaga keamanan untuk shift selama kapal di galangan
+                    </td>
+                    <td class="col-vol">17</td>
+                    <td class="col-sat">hr</td>
+                    <td class="col-keterangan">
+                        <span class="status-complete">SELESAI 100 %</span>
+                    </td>
+                    <td class="col-lampiran image-cell">
+                        <div class="image-placeholder">📷</div>
+                    </td>
+                </tr>
+
+                <!-- Work Item 9 - EXACT as reference -->
+                <tr class="work-item-row">
+                    <td class="col-no work-item-number">9</td>
+                    <td class="col-uraian work-item-description">Diberikan fasilitas truck untuk shift selama kapal di area dock</td>
+                    <td class="col-vol">16</td>
+                    <td class="col-sat">hr</td>
+                    <td class="col-keterangan"></td>
+                    <td class="col-lampiran image-cell">
+                        <div class="image-placeholder">📷</div>
+                    </td>
+                </tr>
+
+                <!-- Realization 9 - EXACT as reference -->
+                <tr class="realization-row">
+                    <td class="col-no"></td>
+                    <td class="col-uraian realization-text">
+                        <strong>Realisasi :</strong><br>
+                        Diberikan fasilitas truck untuk shift selama kapal di galangan
+                    </td>
+                    <td class="col-vol">17</td>
+                    <td class="col-sat">hr</td>
+                    <td class="col-keterangan">
+                        <span class="status-complete">SELESAI 100 %</span>
+                    </td>
+                    <td class="col-lampiran image-cell">
+                        <div class="image-placeholder">📷</div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

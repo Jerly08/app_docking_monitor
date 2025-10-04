@@ -1,0 +1,447 @@
+{
+  "timestamp": "2025-10-04T13-12-31-284Z",
+  "totalItems": 63,
+  "items": [
+    {
+      "originalId": "A",
+      "parentId": null,
+      "projectId": "PRJ-DEFAULT",
+      "title": "PELAYANAN UMUM",
+      "createdAt": "2025-09-29T18:45:21.545Z"
+    },
+    {
+      "originalId": "1",
+      "parentId": "A",
+      "projectId": "PRJ-DEFAULT",
+      "title": "Setibanya di muara, kapal dipandu masuk perairan dock dibantu 1 (satu) tugboat, selesainya dipandu kembali keluar dari cetaran dock",
+      "createdAt": "2025-09-29T18:45:21.561Z"
+    },
+    {
+      "originalId": "1-realisasi",
+      "parentId": "1",
+      "projectId": "PRJ-DEFAULT",
+      "title": "Realisasi",
+      "createdAt": "2025-09-29T18:45:21.570Z"
+    },
+    {
+      "originalId": "2",
+      "parentId": "A",
+      "projectId": "PRJ-DEFAULT",
+      "title": "Asitensi naik/turun dock dan penataan ganjel",
+      "createdAt": "2025-09-29T18:45:21.578Z"
+    },
+    {
+      "originalId": "2-realisasi",
+      "parentId": "2",
+      "projectId": "PRJ-DEFAULT",
+      "title": "Realisasi",
+      "createdAt": "2025-09-29T18:45:21.587Z"
+    },
+    {
+      "originalId": "3",
+      "parentId": "A",
+      "projectId": "PRJ-DEFAULT",
+      "title": "Docking undocking",
+      "createdAt": "2025-09-29T18:45:21.595Z"
+    },
+    {
+      "originalId": "3-realisasi",
+      "parentId": "3",
+      "projectId": "PRJ-DEFAULT",
+      "title": "Realisasi",
+      "createdAt": "2025-09-29T18:45:21.603Z"
+    },
+    {
+      "originalId": "4",
+      "parentId": "A",
+      "projectId": "PRJ-DEFAULT",
+      "title": "Dry docking",
+      "createdAt": "2025-09-29T18:45:21.610Z"
+    },
+    {
+      "originalId": "4-realisasi",
+      "parentId": "4",
+      "projectId": "PRJ-DEFAULT",
+      "title": "Realisasi",
+      "createdAt": "2025-09-29T18:45:21.619Z"
+    },
+    {
+      "originalId": "5",
+      "parentId": "A",
+      "projectId": "PRJ-DEFAULT",
+      "title": "Dibuatkan docking report",
+      "createdAt": "2025-09-29T18:45:21.629Z"
+    },
+    {
+      "originalId": "5-realisasi",
+      "parentId": "5",
+      "projectId": "PRJ-DEFAULT",
+      "title": "Realisasi",
+      "createdAt": "2025-09-29T18:45:21.641Z"
+    },
+    {
+      "originalId": "6",
+      "parentId": "A",
+      "projectId": "PRJ-DEFAULT",
+      "title": "Diberikan fasilitas sandar",
+      "createdAt": "2025-09-29T18:45:21.650Z"
+    },
+    {
+      "originalId": "6-realisasi",
+      "parentId": "6",
+      "projectId": "PRJ-DEFAULT",
+      "title": "Realisasi",
+      "createdAt": "2025-09-29T18:45:21.657Z"
+    },
+    {
+      "originalId": "7",
+      "parentId": "A",
+      "projectId": "PRJ-DEFAULT",
+      "title": "a. Diberikan instalasi pemadam kebakaran dan tenaga/penjaga pemadam",
+      "createdAt": "2025-09-29T18:45:21.664Z"
+    },
+    {
+      "originalId": "T-001",
+      "parentId": null,
+      "projectId": "PRJ-DEFAULT",
+      "title": "Kapal Tiba di Dock",
+      "createdAt": "2025-10-01T06:24:27.235Z"
+    },
+    {
+      "originalId": "T-001-child-1759299867282",
+      "parentId": "T-001",
+      "projectId": "PRJ-DEFAULT",
+      "title": "Realisasi",
+      "createdAt": "2025-10-01T06:24:27.815Z"
+    },
+    {
+      "originalId": "T-001-child-1759300147148",
+      "parentId": "T-001",
+      "projectId": "PRJ-DEFAULT",
+      "title": "Realisasi",
+      "createdAt": "2025-10-01T06:29:07.513Z"
+    },
+    {
+      "originalId": "main-1759300192045",
+      "parentId": null,
+      "projectId": "PRJ-DEFAULT",
+      "title": "Setibanya di muara, kapal dipandu masuk perairan dock dibantu 1 (satu) tugboat",
+      "createdAt": "2025-10-01T06:29:52.402Z"
+    },
+    {
+      "originalId": "main-1759300192045-child-1",
+      "parentId": "main-1759300192045",
+      "projectId": "PRJ-DEFAULT",
+      "title": "Realisasi",
+      "createdAt": "2025-10-01T06:29:52.806Z"
+    },
+    {
+      "originalId": "main-1759300196537",
+      "parentId": null,
+      "projectId": "PRJ-DEFAULT",
+      "title": "Setibanya di muara, kapal dipandu masuk perairan dock dibantu 1 (satu) tugboat",
+      "createdAt": "2025-10-01T06:29:56.916Z"
+    },
+    {
+      "originalId": "main-1759300196537-child-1",
+      "parentId": "main-1759300196537",
+      "projectId": "PRJ-DEFAULT",
+      "title": "Realisasi",
+      "createdAt": "2025-10-01T06:29:57.276Z"
+    },
+    {
+      "originalId": "T-001-child-1759300242311",
+      "parentId": "T-001",
+      "projectId": "PRJ-DEFAULT",
+      "title": "Realisasi :\ntest",
+      "createdAt": "2025-10-01T06:30:42.635Z"
+    },
+    {
+      "originalId": "T-001-child-1759300923577",
+      "parentId": "T-001",
+      "projectId": "PRJ-DEFAULT",
+      "title": "Realisasi :\nrest",
+      "createdAt": "2025-10-01T06:42:03.948Z"
+    },
+    {
+      "originalId": "T-001-child-1759301165980",
+      "parentId": "T-001",
+      "projectId": "PRJ-DEFAULT",
+      "title": "Realisasi :\ntest",
+      "createdAt": "2025-10-01T06:46:06.326Z"
+    },
+    {
+      "originalId": "T-001-child-1759307699046",
+      "parentId": "T-001",
+      "projectId": "PRJ-DEFAULT",
+      "title": "Realisasi :\nDiberikan fasilitas kapal pandu setibanya dimuara untuk masuk area Galangan Surya, 1 set SELESAI 100%\nSelesai docking dipandu kembali keluar dari area Galangan Surya\nKet : Masuk area dock pada 23 Agustus 2025 menggunakan 1 kapal pandu\n Naik dock pada 23 Agustus 2025 menggunakan 1 kapal pandu\n Kapal turun dock pada 07 September 2025 menggunakan 1 kapal pandu\n Keluar area dock pada 08 September 2025 menggunakan 1 kapal pandu",
+      "createdAt": "2025-10-01T08:34:59.554Z"
+    },
+    {
+      "originalId": "T-001-child-1759308899885",
+      "parentId": "T-001",
+      "projectId": "PRJ-DEFAULT",
+      "title": "Realisasi",
+      "createdAt": "2025-10-01T08:55:01.278Z"
+    },
+    {
+      "originalId": "T-001-child-1759312320615",
+      "parentId": "T-001",
+      "projectId": "PRJ-DEFAULT",
+      "title": "Realisasi :\ntesting",
+      "createdAt": "2025-10-01T09:52:05.487Z"
+    },
+    {
+      "originalId": "main-1759519784336",
+      "parentId": null,
+      "projectId": "PRJ-DEFAULT",
+      "title": "Setibanya di muara, kapal dipandu masuk perairan dock dibantu 1 (satu) tugboat",
+      "createdAt": "2025-10-03T19:29:44.831Z"
+    },
+    {
+      "originalId": "main-1759519784336-child-1",
+      "parentId": "main-1759519784336",
+      "projectId": "PRJ-DEFAULT",
+      "title": "Realisasi",
+      "createdAt": "2025-10-03T19:29:45.462Z"
+    },
+    {
+      "originalId": "T-001-child-1759521264158",
+      "parentId": "T-001",
+      "projectId": "PRJ-DEFAULT",
+      "title": "Realisasi :\nDiberikan fasilitas kapal pandu setibanya dimuara untuk masuk area Galangan Surya, 1 set SELESAI 100%\nSelesai docking dipandu kembali keluar dari area Galangan Surya\nKet : Masuk area dock pada 23 Agustus 2025 menggunakan 1 kapal pandu\n Naik dock pada 23 Agustus 2025 menggunakan 1 kapal pandu\n Kapal turun dock pada 07 September 2025 menggunakan 1 kapal pandu\n Keluar area dock pada 08 September 2025 menggunakan 1 kapal p",
+      "createdAt": "2025-10-03T19:54:25.691Z"
+    },
+    {
+      "originalId": "T-001-child-1759521308489",
+      "parentId": "T-001",
+      "projectId": "PRJ-DEFAULT",
+      "title": "Realisasi :\nDiberikan fasilitas asistensi naik / turun dock dan penataan ganjal",
+      "createdAt": "2025-10-03T19:55:09.579Z"
+    },
+    {
+      "originalId": "PELAYANAN-001",
+      "parentId": null,
+      "projectId": "PRJ-DEFAULT",
+      "title": "Persiapan Area Docking",
+      "createdAt": "2025-10-04T00:04:24.974Z"
+    },
+    {
+      "originalId": "SURVEY-001",
+      "parentId": null,
+      "projectId": "PRJ-DEFAULT",
+      "title": "Survey Kondisi Kapal",
+      "createdAt": "2025-10-04T00:04:24.995Z"
+    },
+    {
+      "originalId": "SURVEY-001-1",
+      "parentId": "SURVEY-001",
+      "projectId": "PRJ-DEFAULT",
+      "title": "Inspeksi Hull",
+      "createdAt": "2025-10-04T00:04:25.003Z"
+    },
+    {
+      "originalId": "SURVEY-001-2",
+      "parentId": "SURVEY-001",
+      "projectId": "PRJ-DEFAULT",
+      "title": "Inspeksi Mesin",
+      "createdAt": "2025-10-04T00:04:25.014Z"
+    },
+    {
+      "originalId": "PROJECT-001",
+      "parentId": null,
+      "projectId": "PRJ-DEFAULT",
+      "title": "Koordinasi Proyek Docking",
+      "createdAt": "2025-10-04T00:04:25.022Z"
+    },
+    {
+      "originalId": "SAMPLE-1759537904003",
+      "parentId": null,
+      "projectId": "PRJ-DEFAULT",
+      "title": "Sample Work Item",
+      "createdAt": "2025-10-04T00:31:44.044Z"
+    },
+    {
+      "originalId": "WI-PRJ001-A1",
+      "parentId": null,
+      "projectId": "PRJ-001",
+      "title": "Setibanya di muara, kapal dipandu masuk perairan dock dibantu 1 (satu) tugboat, selesainya dipandu kembali keluar dari perairan dock",
+      "createdAt": "2025-10-04T02:01:50.191Z"
+    },
+    {
+      "originalId": "WI-PRJ001-A1-R",
+      "parentId": "WI-PRJ001-A1",
+      "projectId": "PRJ-001",
+      "title": "Realisasi",
+      "createdAt": "2025-10-04T02:01:50.202Z"
+    },
+    {
+      "originalId": "WI-PRJ001-A4",
+      "parentId": null,
+      "projectId": "PRJ-001",
+      "title": "Dry docking",
+      "createdAt": "2025-10-04T02:01:50.208Z"
+    },
+    {
+      "originalId": "WI-PRJ001-A4-R",
+      "parentId": "WI-PRJ001-A4",
+      "projectId": "PRJ-001",
+      "title": "Realisasi",
+      "createdAt": "2025-10-04T02:01:50.215Z"
+    },
+    {
+      "originalId": "WI-PRJ002-A1",
+      "parentId": null,
+      "projectId": "PRJ-002",
+      "title": "Setibanya di muara, kapal dipandu masuk perairan dock dibantu 1 (satu) tugboat, selesainya dipandu kembali keluar dari perairan dock",
+      "createdAt": "2025-10-04T02:01:50.224Z"
+    },
+    {
+      "originalId": "MVOCEANSTAR-A-1759568802639-NSL",
+      "parentId": null,
+      "projectId": "PRJ-002",
+      "title": "PELAYANAN UMUM",
+      "createdAt": "2025-10-04T09:06:42.643Z"
+    },
+    {
+      "originalId": "MVOCEANSTAR-A1-1759568802713-LTS",
+      "parentId": "MVOCEANSTAR-A-1759568802639-NSL",
+      "projectId": "PRJ-002",
+      "title": "Setibanya di muara, kapal dipandu masuk perairan dock dibantu 1 (satu) tugboat, selesainya dipandu kembali keluar dari perairan dock",
+      "createdAt": "2025-10-04T09:06:42.716Z"
+    },
+    {
+      "originalId": "MVOCEANSTAR-A1-1759568802724-SJF",
+      "parentId": "MVOCEANSTAR-A1-1759568802713-LTS",
+      "projectId": "PRJ-002",
+      "title": "Realisasi",
+      "createdAt": "2025-10-04T09:06:42.728Z"
+    },
+    {
+      "originalId": "MVOCEANSTAR-A2-1759568802735-AAJ",
+      "parentId": "MVOCEANSTAR-A-1759568802639-NSL",
+      "projectId": "PRJ-002",
+      "title": "Assistensi naik/turun dock dan penataan ganjel",
+      "createdAt": "2025-10-04T09:06:42.739Z"
+    },
+    {
+      "originalId": "MVOCEANSTAR-A2-1759568802745-DB4",
+      "parentId": "MVOCEANSTAR-A2-1759568802735-AAJ",
+      "projectId": "PRJ-002",
+      "title": "Realisasi",
+      "createdAt": "2025-10-04T09:06:42.748Z"
+    },
+    {
+      "originalId": "MVOCEANSTAR-A3-1759568802754-ZAP",
+      "parentId": "MVOCEANSTAR-A-1759568802639-NSL",
+      "projectId": "PRJ-002",
+      "title": "Docking undocking",
+      "createdAt": "2025-10-04T09:06:42.757Z"
+    },
+    {
+      "originalId": "MVOCEANSTAR-A3-1759568802762-UB8",
+      "parentId": "MVOCEANSTAR-A3-1759568802754-ZAP",
+      "projectId": "PRJ-002",
+      "title": "Realisasi",
+      "createdAt": "2025-10-04T09:06:42.765Z"
+    },
+    {
+      "originalId": "MVOCEANSTAR-A4-1759568802771-V4G",
+      "parentId": "MVOCEANSTAR-A-1759568802639-NSL",
+      "projectId": "PRJ-002",
+      "title": "Dry docking",
+      "createdAt": "2025-10-04T09:06:42.774Z"
+    },
+    {
+      "originalId": "MVOCEANSTAR-A4-1759568802781-F17",
+      "parentId": "MVOCEANSTAR-A4-1759568802771-V4G",
+      "projectId": "PRJ-002",
+      "title": "Realisasi",
+      "createdAt": "2025-10-04T09:06:42.784Z"
+    },
+    {
+      "originalId": "MVOCEANSTAR-A5-1759568802791-EM2",
+      "parentId": "MVOCEANSTAR-A-1759568802639-NSL",
+      "projectId": "PRJ-002",
+      "title": "Dibuatkan docking report",
+      "createdAt": "2025-10-04T09:06:42.795Z"
+    },
+    {
+      "originalId": "MVOCEANSTAR-A5-1759568802800-IX9",
+      "parentId": "MVOCEANSTAR-A5-1759568802791-EM2",
+      "projectId": "PRJ-002",
+      "title": "Realisasi",
+      "createdAt": "2025-10-04T09:06:42.803Z"
+    },
+    {
+      "originalId": "MVOCEANSTAR-B-1759568802808-2H3",
+      "parentId": null,
+      "projectId": "PRJ-002",
+      "title": "UNIT PERAWATAN LAMBUNG & TANGKI",
+      "createdAt": "2025-10-04T09:06:42.813Z"
+    },
+    {
+      "originalId": "MVOCEANSTAR-B1-1759568802818-DZS",
+      "parentId": "MVOCEANSTAR-B-1759568802808-2H3",
+      "projectId": "PRJ-002",
+      "title": "Badan Kapal Bawah Garis Air (BGA)",
+      "createdAt": "2025-10-04T09:06:42.821Z"
+    },
+    {
+      "originalId": "MVOCEANSTAR-B1-1759568802826-B2C",
+      "parentId": "MVOCEANSTAR-B1-1759568802818-DZS",
+      "projectId": "PRJ-002",
+      "title": "Skrap (70%)",
+      "createdAt": "2025-10-04T09:06:42.830Z"
+    },
+    {
+      "originalId": "MVOCEANSTAR-B1-1759568802835-IUA",
+      "parentId": "MVOCEANSTAR-B1-1759568802818-DZS",
+      "projectId": "PRJ-002",
+      "title": "Water jet air tawar",
+      "createdAt": "2025-10-04T09:06:42.838Z"
+    },
+    {
+      "originalId": "MVOCEANSTAR-B1-1759568802843-33Z",
+      "parentId": "MVOCEANSTAR-B1-1759568802818-DZS",
+      "projectId": "PRJ-002",
+      "title": "Fullblasting (100%)",
+      "createdAt": "2025-10-04T09:06:42.846Z"
+    },
+    {
+      "originalId": "MVOCEANSTAR-B1-1759568802851-09Q",
+      "parentId": "MVOCEANSTAR-B1-1759568802818-DZS",
+      "projectId": "PRJ-002",
+      "title": "Cuci air tawar cuci air tawar setelah full blassting",
+      "createdAt": "2025-10-04T09:06:42.854Z"
+    },
+    {
+      "originalId": "MVOCEANSTAR-B1-1759568802858-0V3",
+      "parentId": "MVOCEANSTAR-B1-1759568802818-DZS",
+      "projectId": "PRJ-002",
+      "title": "Pengecatan (1 x AC, 1 x Sealer, 1 x AF)",
+      "createdAt": "2025-10-04T09:06:42.862Z"
+    },
+    {
+      "originalId": "MVOCEANSTAR-B1-1759568802867-VYV",
+      "parentId": "MVOCEANSTAR-B1-1759568802818-DZS",
+      "projectId": "PRJ-002",
+      "title": "Realisasi",
+      "createdAt": "2025-10-04T09:06:42.870Z"
+    },
+    {
+      "originalId": "WI-1759577616590-0he14bnab",
+      "parentId": null,
+      "projectId": "cmgc70i6a00009qw8ca9rrvd9",
+      "title": "Setibanya di muara, kapal dipandu masuk perairan dock dibantu 1 (satu) tugboat, 1 ls selesainya dipandu kembali keluar dari perairan dock",
+      "createdAt": "2025-10-04T11:33:36.594Z"
+    },
+    {
+      "originalId": "WI-1759578274178-luzk79fc9",
+      "parentId": "WI-1759577616590-0he14bnab",
+      "projectId": "cmgc70i6a00009qw8ca9rrvd9",
+      "title": "Diberikan fasilitas kapal pandu setibanya dimuara untuk masuk area Galangan Surya, 1 set SELESAI 100%\nSelesai docking dipandu kembali keluar dari area Galangan Surya\nKet : Masuk area dock pada 23 Agustus 2025 menggunakan 1 kapal pandu\n Naik dock pada 23 Agustus 2025 menggunakan 1 kapal pandu\n Kapal turun dock pada 07 September 2025 menggunakan 1 kapal pandu\n Keluar area dock pada 08 September 2025 menggunakan 1 kapal",
+      "createdAt": "2025-10-04T11:44:34.180Z"
+    }
+  ]
+}

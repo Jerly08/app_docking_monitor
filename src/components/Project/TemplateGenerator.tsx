@@ -229,13 +229,13 @@ const TemplateGenerator: React.FC<TemplateGeneratorProps> = ({
         size="sm"
         onClick={handleOpen}
       >
-        Generate from Templates
+        Generate Template Excel
       </Button>
 
       <Modal isOpen={isOpen} onClose={onClose} size="xl">
         <ModalOverlay />
         <ModalContent maxH="80vh">
-          <ModalHeader>Generate Work Items from Templates</ModalHeader>
+          <ModalHeader>Generate Work Items from Excel Templates</ModalHeader>
           <ModalCloseButton />
           
           <ModalBody overflow="auto">

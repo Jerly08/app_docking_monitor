@@ -22,21 +22,41 @@ import {
   IconButton,
   Tooltip,
 } from '@chakra-ui/react'
-import { FiPlus, FiSettings, FiInfo } from 'react-icons/fi'
+import { FiPlus, FiSettings, FiInfo, FiUsers } from 'react-icons/fi'
 import React, { useState, useEffect } from 'react'
 import { useClientOnly } from '@/hooks/useClientOnly'
 import { useModalState } from '@/hooks/useModalState'
+import { useAuth } from '@/contexts/AuthContext'
+import { isAdmin, hasProjectPermission } from '@/lib/auth-utils'
+import ProjectManager from './ProjectManager'
 
 interface Project {
   id: string
   projectName: string
   vesselName?: string
   customerCompany?: string
+  customerId?: string
+  customerContactPerson?: string
+  customerPhone?: string
+  customerEmail?: string
+  customerAddress?: string
+  vesselSpecs?: any
   status: string
   createdAt: string
   _count?: {
     workItems: number
   }
+}
+
+interface CustomerContact {
+  id: string
+  vesselName: string
+  ownerCompany: string
+  contactPerson: string
+  phoneNumber: string
+  email: string
+  address: string
+  status: string
 }
 
 interface ProjectSelectorProps {
@@ -52,8 +72,11 @@ const ProjectSelector: React.FC<ProjectSelectorProps> = ({
   showCreateButton = true,
   showProjectInfo = true
 }) => {
+  const { user } = useAuth()
   const [projects, setProjects] = useState<Project[]>([])
+  const [customers, setCustomers] = useState<CustomerContact[]>([])
   const [loading, setLoading] = useState(false)
+  const [loadingCustomers, setLoadingCustomers] = useState(false)
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
   const isClient = useClientOnly()
   
@@ -63,8 +86,18 @@ const ProjectSelector: React.FC<ProjectSelectorProps> = ({
     projectName: '',
     vesselName: '',
     customerCompany: '',
+    customerId: '',
+    customerContactPerson: '',
+    customerPhone: '',
+    customerEmail: '',
+    customerAddress: '',
     status: 'ACTIVE'
   })
+  
+  // Confirmation modal state
+  const { isOpen: isConfirmOpen, onOpen: onConfirmOpen, onClose: onConfirmClose } = useModalState()
+  const [conflictingProject, setConflictingProject] = useState<Project | null>(null)
+  const [pendingCreation, setPendingCreation] = useState(false)
   
   const toast = useToast()
 
@@ -73,7 +106,12 @@ const ProjectSelector: React.FC<ProjectSelectorProps> = ({
     setCreateForm({ 
       projectName: '', 
       vesselName: '', 
-      customerCompany: '', 
+      customerCompany: '',
+      customerId: '',
+      customerContactPerson: '',
+      customerPhone: '',
+      customerEmail: '',
+      customerAddress: '',
       status: 'ACTIVE' 
     })
     onCreateClose()
@@ -83,51 +121,175 @@ const ProjectSelector: React.FC<ProjectSelectorProps> = ({
     try {
       setLoading(true)
       const token = localStorage.getItem('auth_token')
+      
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json'
+      }
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+      
+      console.log('Fetching projects from /api/projects...')
+      
       const response = await fetch('/api/projects', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+        headers
       })
+      
+      console.log('Projects API response status:', response.status)
 
       if (response.ok) {
         const data = await response.json()
-        setProjects(data.projects || data)
+        console.log('Raw projects API response:', data)
+        
+        // Safely extract projects array from response
+        const projectsArray = Array.isArray(data) ? data : (data.projects || [])
+        console.log('Extracted projects array:', projectsArray)
+        
+        // Ensure we have a valid array
+        if (!Array.isArray(projectsArray)) {
+          console.error('Invalid projects data received:', {
+            rawData: data,
+            extractedArray: projectsArray,
+            isArray: Array.isArray(projectsArray),
+            dataType: typeof data
+          })
+          throw new Error(`Invalid projects data format. Expected array, got ${typeof projectsArray}`)
+        }
+        
+        setProjects(projectsArray)
+        console.log(`Successfully loaded ${projectsArray.length} projects`)
         
         // Auto-select first project if none selected
-        if (!selectedProjectId && data.length > 0) {
-          const firstProject = data[0]
+        if (!selectedProjectId && projectsArray.length > 0) {
+          const firstProject = projectsArray[0]
+          console.log('Auto-selecting first project:', firstProject)
           setSelectedProject(firstProject)
           onProjectChange(firstProject.id, firstProject)
-        } else if (selectedProjectId) {
+        } else if (selectedProjectId && projectsArray.length > 0) {
           // Find and set the selected project
-          const project = data.find((p: Project) => p.id === selectedProjectId)
+          console.log('Looking for project with ID:', selectedProjectId)
+          const project = projectsArray.find((p: Project) => p.id === selectedProjectId)
+          console.log('Found project:', project)
           setSelectedProject(project || null)
         }
       } else {
-        throw new Error('Failed to fetch projects')
+        const errorText = await response.text()
+        console.error('Projects API error:', {
+          status: response.status,
+          statusText: response.statusText,
+          errorText
+        })
+        throw new Error(`Failed to fetch projects: ${response.status} ${response.statusText}`)
       }
-    } catch (error) {
-      console.error('Error fetching projects:', error)
+    } catch (error: any) {
+      console.error('Error fetching projects:', {
+        error,
+        message: error?.message,
+        stack: error?.stack
+      })
+      
+      // Ensure projects is always an array to prevent further errors
+      setProjects([])
+      setSelectedProject(null)
+      
       toast({
         title: 'Error',
-        description: 'Failed to load projects',
+        description: error?.message || 'Failed to load projects',
         status: 'error',
-        duration: 3000
+        duration: 5000
       })
     } finally {
       setLoading(false)
     }
   }
 
-  const handleProjectChange = (projectId: string) => {
-    const project = projects.find(p => p.id === projectId) || null
-    setSelectedProject(project)
-    onProjectChange(projectId, project)
+  const fetchCustomers = async () => {
+    try {
+      setLoadingCustomers(true)
+      const response = await fetch('/api/customer-contacts')
+      if (response.ok) {
+        const data = await response.json()
+        setCustomers(data.data || [])
+      } else {
+        throw new Error('Failed to fetch customers')
+      }
+    } catch (error) {
+      console.error('Error fetching customers:', error)
+      toast({
+        title: 'Error',
+        description: 'Failed to load customers',
+        status: 'error',
+        duration: 3000
+      })
+    } finally {
+      setLoadingCustomers(false)
+    }
   }
 
-  const createProject = async () => {
+  const handleProjectChange = (projectId: string) => {
     try {
+      // Ensure projects is an array before using find
+      if (!Array.isArray(projects)) {
+        console.warn('Projects is not an array:', projects)
+        setSelectedProject(null)
+        onProjectChange(projectId, null)
+        return
+      }
+      
+      const project = projects.find(p => p?.id === projectId) || null
+      console.log('Project change:', { projectId, project })
+      setSelectedProject(project)
+      onProjectChange(projectId, project)
+    } catch (error) {
+      console.error('Error in handleProjectChange:', error)
+      setSelectedProject(null)
+      onProjectChange(projectId, null)
+    }
+  }
+
+  const handleCustomerChange = (customerId: string) => {
+    try {
+      if (customerId) {
+        // Ensure customers is an array before using find
+        if (!Array.isArray(customers)) {
+          console.warn('Customers is not an array:', customers)
+          return
+        }
+        
+        const customer = customers.find(c => c?.id === customerId)
+        if (customer) {
+          setCreateForm({
+            ...createForm,
+            customerId: customer.id,
+            vesselName: customer.vesselName,
+            customerCompany: customer.ownerCompany,
+            customerContactPerson: customer.contactPerson,
+            customerPhone: customer.phoneNumber,
+            customerEmail: customer.email,
+            customerAddress: customer.address
+          })
+        }
+      } else {
+        setCreateForm({
+          ...createForm,
+          customerId: '',
+          vesselName: '',
+          customerCompany: '',
+          customerContactPerson: '',
+          customerPhone: '',
+          customerEmail: '',
+          customerAddress: ''
+        })
+      }
+    } catch (error) {
+      console.error('Error in handleCustomerChange:', error)
+    }
+  }
+
+  const performProjectCreation = async (skipValidation = false) => {
+    try {
+      // Client-side validation
       if (!createForm.projectName.trim() || !createForm.vesselName.trim()) {
         toast({
           title: 'Validation Error',
@@ -138,18 +300,71 @@ const ProjectSelector: React.FC<ProjectSelectorProps> = ({
         return
       }
 
+      if (!skipValidation) {
+        // Check for similar vessel names but allow flexibility
+        // Ensure projects is an array before using filter
+        if (!Array.isArray(projects)) {
+          console.warn('Projects is not an array during validation:', projects)
+        } else {
+          const similarVesselProjects = projects.filter(p => 
+            p?.vesselName?.toLowerCase().trim() === createForm.vesselName.toLowerCase().trim() &&
+            p?.status !== 'COMPLETED'
+          )
+          
+          // Only warn if there are active projects with same vessel name AND same customer
+          const conflictingProject = Array.isArray(similarVesselProjects) 
+            ? similarVesselProjects.find(p => 
+                p?.customerCompany?.toLowerCase().trim() === createForm.customerCompany.toLowerCase().trim()
+              )
+            : null
+          
+          if (conflictingProject && similarVesselProjects.length > 0) {
+            // Show confirmation modal instead of basic confirm
+            setConflictingProject(conflictingProject)
+            setPendingCreation(true)
+            onConfirmOpen()
+            return
+          }
+        }
+      }
+
       const token = localStorage.getItem('auth_token')
+      // For debugging: log token status
+      console.log('Auth token status:', token ? 'present' : 'missing')
+
+      console.log('Creating project with data:', createForm)
+      
+      // Prepare headers with optional auth
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json'
+      }
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+      
       const response = await fetch('/api/projects', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
+        headers,
         body: JSON.stringify(createForm)
       })
 
+      console.log('API Response status:', response.status)
+      console.log('API Response headers:', response.headers)
+      
+      // Get response text first to handle both JSON and text responses
+      const responseText = await response.text()
+      console.log('API Response body:', responseText)
+      
       if (response.ok) {
-        const newProject = await response.json()
+        let newProject
+        try {
+          newProject = JSON.parse(responseText)
+        } catch (parseError) {
+          console.error('Failed to parse success response:', parseError)
+          throw new Error('Invalid response format from server')
+        }
+        
         toast({
           title: 'Success',
           description: 'Project created successfully',
@@ -165,18 +380,79 @@ const ProjectSelector: React.FC<ProjectSelectorProps> = ({
         setSelectedProject(newProject)
         onProjectChange(newProject.id, newProject)
       } else {
-        const error = await response.json()
-        throw new Error(error.message || 'Failed to create project')
+        let errorMessage = 'Failed to create project'
+        
+        try {
+          const errorData = JSON.parse(responseText)
+          errorMessage = errorData.error || errorData.message || errorMessage
+          
+          // Handle specific error cases
+          if (response.status === 409) {
+            errorMessage = `Project already exists: ${errorMessage}`
+          } else if (response.status === 400) {
+            errorMessage = `Validation error: ${errorMessage}`
+          } else if (response.status === 401) {
+            errorMessage = 'Authentication failed. Please log in again.'
+          } else if (response.status === 500) {
+            errorMessage = 'Server error. Please try again later.'
+          }
+        } catch (parseError) {
+          console.error('Failed to parse error response:', parseError)
+          errorMessage = `HTTP ${response.status}: ${responseText || errorMessage}`
+        }
+        
+        throw new Error(errorMessage)
       }
     } catch (error: any) {
       console.error('Error creating project:', error)
       toast({
         title: 'Error',
-        description: error.message || 'Failed to create project',
+        description: error.message || 'An unexpected error occurred',
         status: 'error',
-        duration: 3000
+        duration: 5000
       })
     }
+  }
+
+  const createProject = async () => {
+    // Reset confirmation state
+    setPendingCreation(false)
+    setConflictingProject(null)
+    
+    // Call the actual creation function
+    await performProjectCreation()
+  }
+  
+  const handleConfirmCreation = async () => {
+    onConfirmClose()
+    setPendingCreation(false)
+    setConflictingProject(null)
+    
+    // Skip validation checks and create the project
+    await performProjectCreation(true) // Pass true to skip conflict validation
+  }
+  
+  // Callback untuk refresh projects dari ProjectManager
+  const handleProjectsUpdated = () => {
+    // Refresh project list
+    fetchProjects()
+    
+    // If current project was deleted, clear selection
+    if (selectedProjectId && Array.isArray(projects)) {
+      const projectExists = projects.find(p => p?.id === selectedProjectId)
+      if (!projectExists) {
+        setSelectedProject(null)
+        onProjectChange('', null)
+      }
+    }
+    
+    // Show success feedback (ProjectManager will handle its own toasts)
+    // This is just to refresh the UI state
+  }
+  
+  const handleCancelCreation = () => {
+    setPendingCreation(false)
+    setConflictingProject(null)
   }
 
   useEffect(() => {
@@ -184,6 +460,12 @@ const ProjectSelector: React.FC<ProjectSelectorProps> = ({
       fetchProjects()
     }
   }, [isClient])
+
+  useEffect(() => {
+    if (isCreateOpen && customers.length === 0) {
+      fetchCustomers()
+    }
+  }, [isCreateOpen])
 
   const getStatusColor = (status: string) => {
     switch (status.toUpperCase()) {
@@ -243,11 +525,19 @@ const ProjectSelector: React.FC<ProjectSelectorProps> = ({
             _focus={{ borderColor: 'blue.500', boxShadow: '0 0 0 1px blue.500' }}
             suppressHydrationWarning
           >
-            {isClient && projects.map(project => (
-              <option key={project.id} value={project.id}>
-                {project.projectName} ({project._count?.workItems || 0} tasks)
-              </option>
-            ))}
+            {isClient && projects.map(project => {
+              const hasWorkItems = project._count?.workItems && project._count.workItems > 0
+              const canDelete = hasProjectPermission(user, 'delete')
+              const canForceDelete = isAdmin(user) && hasWorkItems
+              
+              return (
+                <option key={project.id} value={project.id}>
+                  {project.projectName} 
+                  ({project._count?.workItems || 0} tasks)
+                  {project.status !== 'ACTIVE' ? ` - ${project.status}` : ''}
+                </option>
+              )
+            })}
           </Select>
           
           {showCreateButton && isClient && (
@@ -296,6 +586,14 @@ const ProjectSelector: React.FC<ProjectSelectorProps> = ({
                     </Text>
                   </HStack>
                 )}
+                {selectedProject.vesselSpecs && (selectedProject.vesselSpecs as any)?.customerContactPerson && (
+                  <HStack spacing={1}>
+                    <Text fontSize="xs" color="blue.500" fontWeight="medium">CONTACT:</Text>
+                    <Text fontSize="sm" color="blue.700" fontWeight="semibold">
+                      {(selectedProject.vesselSpecs as any).customerContactPerson}
+                    </Text>
+                  </HStack>
+                )}
                 <HStack spacing={1}>
                   <Text fontSize="xs" color="blue.500" fontWeight="medium">TASKS:</Text>
                   <Text fontSize="sm" color="blue.700" fontWeight="bold">
@@ -308,19 +606,45 @@ const ProjectSelector: React.FC<ProjectSelectorProps> = ({
                     {isClient ? new Date(selectedProject.createdAt).toLocaleDateString() : 'Loading...'}
                   </Text>
                 </HStack>
+                {/* Admin indicator */}
+                {isAdmin(user) && (
+                  <HStack spacing={1}>
+                    <Text fontSize="xs" color="orange.500" fontWeight="medium">ACCESS:</Text>
+                    <Badge colorScheme="orange" size="sm" px={2}>
+                      ADMIN
+                    </Badge>
+                  </HStack>
+                )}
               </HStack>
             </VStack>
             
             {isClient && (
-              <IconButton
-                icon={<FiSettings />}
-                aria-label="Project settings"
-                size="sm"
-                variant="ghost"
-                colorScheme="blue"
-                _hover={{ bg: 'blue.200' }}
-                suppressHydrationWarning
-              />
+              <HStack spacing={1}>
+                {/* Project Management untuk Admin/Manager */}
+                {hasProjectPermission(user, 'delete') && (
+                  <Tooltip label="Manage Projects">
+                    <div>
+                      <ProjectManager 
+                        currentProjectId={selectedProjectId}
+                        onProjectUpdated={handleProjectsUpdated}
+                      />
+                    </div>
+                  </Tooltip>
+                )}
+                
+                {/* Settings button */}
+                <Tooltip label="Project settings">
+                  <IconButton
+                    icon={<FiSettings />}
+                    aria-label="Project settings"
+                    size="sm"
+                    variant="ghost"
+                    colorScheme="blue"
+                    _hover={{ bg: 'blue.200' }}
+                    suppressHydrationWarning
+                  />
+                </Tooltip>
+              </HStack>
             )}
           </HStack>
         </Box>
@@ -330,6 +654,7 @@ const ProjectSelector: React.FC<ProjectSelectorProps> = ({
       <Modal 
         isOpen={isCreateOpen} 
         onClose={handleCreateModalClose}
+        size="lg"
       >
         <ModalOverlay />
         <ModalContent>
@@ -346,6 +671,27 @@ const ProjectSelector: React.FC<ProjectSelectorProps> = ({
                   onChange={(e) => setCreateForm({ ...createForm, projectName: e.target.value })}
                   placeholder="Enter project name..."
                 />
+              </Box>
+              
+              <Box w="full">
+                <Text fontSize="sm" fontWeight="medium" mb={2}>
+                  Select Customer
+                </Text>
+                <Select
+                  placeholder={loadingCustomers ? "Loading customers..." : "Select a customer..."}
+                  value={createForm.customerId}
+                  onChange={(e) => handleCustomerChange(e.target.value)}
+                  disabled={loadingCustomers}
+                >
+                  {customers.map(customer => (
+                    <option key={customer.id} value={customer.id}>
+                      {customer.vesselName} - {customer.ownerCompany}
+                    </option>
+                  ))}
+                </Select>
+                <Text fontSize="xs" color="gray.500" mt={1}>
+                  Select a customer to auto-fill vessel and company information
+                </Text>
               </Box>
               
               <Box w="full">
@@ -392,6 +738,72 @@ const ProjectSelector: React.FC<ProjectSelectorProps> = ({
             </Button>
             <Button colorScheme="blue" onClick={createProject}>
               Create Project
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      {/* Confirmation Modal for Duplicate Vessels */}
+      <Modal 
+        isOpen={isConfirmOpen} 
+        onClose={handleCancelCreation}
+        size="md"
+      >
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Confirm Project Creation</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <VStack spacing={4} align="stretch">
+              <Box p={4} bg="yellow.50" borderRadius="md" borderLeft="4px solid" borderColor="yellow.400">
+                <Text fontSize="sm" color="yellow.800" fontWeight="medium">
+                  ⚠️ Similar Project Detected
+                </Text>
+              </Box>
+              
+              <Text fontSize="sm" color="gray.700">
+                A project already exists for vessel <strong>"{createForm.vesselName}"</strong> with the same customer:
+              </Text>
+              
+              {conflictingProject && (
+                <Box p={3} bg="gray.50" borderRadius="md" border="1px solid" borderColor="gray.200">
+                  <Text fontSize="sm" fontWeight="semibold" color="gray.800">
+                    Existing Project:
+                  </Text>
+                  <Text fontSize="sm" color="gray.600">
+                    {conflictingProject.projectName}
+                  </Text>
+                  <Text fontSize="xs" color="gray.500" mt={1}>
+                    Customer: {conflictingProject.customerCompany || 'Not specified'}
+                  </Text>
+                </Box>
+              )}
+              
+              <Box p={3} bg="blue.50" borderRadius="md" border="1px solid" borderColor="blue.200">
+                <Text fontSize="sm" fontWeight="semibold" color="blue.800">
+                  New Project:
+                </Text>
+                <Text fontSize="sm" color="blue.600">
+                  {createForm.projectName}
+                </Text>
+                <Text fontSize="xs" color="blue.500" mt={1}>
+                  Customer: {createForm.customerCompany || 'Not specified'}
+                </Text>
+              </Box>
+              
+              <Text fontSize="sm" color="gray.600">
+                This might be for a different time period, additional work, or different scope. 
+                Do you want to continue creating this project?
+              </Text>
+            </VStack>
+          </ModalBody>
+          
+          <ModalFooter>
+            <Button variant="ghost" mr={3} onClick={handleCancelCreation}>
+              Cancel
+            </Button>
+            <Button colorScheme="blue" onClick={handleConfirmCreation}>
+              Yes, Create Project
             </Button>
           </ModalFooter>
         </ModalContent>

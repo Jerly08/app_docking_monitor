@@ -9,7 +9,8 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = params
+    const resolvedParams = await params
+    const { id } = resolvedParams
     const body = await request.json()
     
     // Check if project exists

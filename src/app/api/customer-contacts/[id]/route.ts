@@ -78,8 +78,9 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    const resolvedParams = await params
     const customers = getCustomers()
-    const customer = customers.find(c => c.id === params.id)
+    const customer = customers.find(c => c.id === resolvedParams.id)
 
     if (!customer) {
       return NextResponse.json(
@@ -107,9 +108,10 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
+    const resolvedParams = await params
     const body = await request.json()
     const customers = getCustomers()
-    const customerIndex = customers.findIndex(c => c.id === params.id)
+    const customerIndex = customers.findIndex(c => c.id === resolvedParams.id)
 
     if (customerIndex === -1) {
       return NextResponse.json(
@@ -122,7 +124,7 @@ export async function PATCH(
     const updatedCustomer = {
       ...customers[customerIndex],
       ...body,
-      id: params.id, // Ensure ID doesn't change
+      id: resolvedParams.id, // Ensure ID doesn't change
       updatedAt: new Date().toISOString().split('T')[0]
     }
 
@@ -146,8 +148,9 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+    const resolvedParams = await params
     const customers = getCustomers()
-    const customerIndex = customers.findIndex(c => c.id === params.id)
+    const customerIndex = customers.findIndex(c => c.id === resolvedParams.id)
 
     if (customerIndex === -1) {
       return NextResponse.json(

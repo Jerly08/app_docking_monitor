@@ -56,6 +56,12 @@ import ClientOnlyLayout from '@/components/Layout/ClientOnlyLayout'
 import ProjectSelector from '@/components/Project/ProjectSelector'
 import TemplateGenerator from '@/components/Project/TemplateGenerator'
 import ProjectManager from '@/components/Project/ProjectManager'
+import AddWorkItemModal from '@/components/WorkItem/AddWorkItemModal'
+import AddChildWorkItemModal from '@/components/WorkItem/AddChildWorkItemModal'
+import ViewTaskModal from '@/components/WorkItem/ViewTaskModal'
+import IdDisplay from '@/components/WorkItem/IdDisplay'
+import ExcelImportModal from '@/components/WorkItem/ExcelImportModal'
+import CompletionRecalculator from '@/components/WorkItem/CompletionRecalculator'
 import NoSSR from '@/components/NoSSR'
 
 interface WorkItem {
@@ -76,7 +82,6 @@ interface WorkItem {
   finishDate?: string
   resourceNames: string
   isMilestone: boolean
-  dependsOnIds?: string[]
   children?: WorkItem[]
   parent?: WorkItem
   createdAt?: string
@@ -97,19 +102,23 @@ interface Project {
   }
 }
 
-const WorkPlanTable = ({ workItems, onUpdate }: { workItems: WorkItem[], onUpdate: () => void }) => {
-  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
+const WorkPlanTable = ({ workItems, onUpdate, onDelete, onAddChild, onViewTask, projectId, expandedRows, setExpandedRows }: { workItems: WorkItem[], onUpdate: () => void, onDelete: (id: string) => void, onAddChild: (item: WorkItem) => void, onViewTask: (item: WorkItem) => void, projectId: string, expandedRows?: Set<string>, setExpandedRows?: (rows: Set<string>) => void }) => {
+  const [localExpandedRows, setLocalExpandedRows] = useState<Set<string>>(new Set())
+  
+  // Use provided expandedRows or fall back to local state
+  const currentExpandedRows = expandedRows || localExpandedRows
+  const setCurrentExpandedRows = setExpandedRows || setLocalExpandedRows
   const [editingCell, setEditingCell] = useState<{ id: string, field: string } | null>(null)
   const [editValue, setEditValue] = useState('')
 
   const toggleExpanded = (id: string) => {
-    const newExpanded = new Set(expandedRows)
+    const newExpanded = new Set(currentExpandedRows)
     if (newExpanded.has(id)) {
       newExpanded.delete(id)
     } else {
       newExpanded.add(id)
     }
-    setExpandedRows(newExpanded)
+    setCurrentExpandedRows(newExpanded)
   }
 
   const startEdit = (id: string, field: string, currentValue: any) => {
@@ -121,21 +130,49 @@ const WorkPlanTable = ({ workItems, onUpdate }: { workItems: WorkItem[], onUpdat
     if (!editingCell) return
     
     try {
-      const response = await fetch(`/api/work-items/${editingCell.id}`, {
+      // Encode the work item ID to handle IDs with forward slashes
+      const encodedId = encodeURIComponent(editingCell.id)
+      
+      // Prepare the update data with proper type conversion
+      let updateValue: any = editValue
+      if (editingCell.field === 'completion') {
+        updateValue = parseInt(editValue) || 0
+      } else if (editingCell.field === 'durationDays') {
+        updateValue = parseInt(editValue) || 1
+      }
+      
+      const updateData = {
+        [editingCell.field]: updateValue
+      }
+      
+      console.log('Updating work item:', editingCell.id, 'Field:', editingCell.field, 'Value:', updateValue)
+      
+      const response = await fetch(`/api/work-items/${encodedId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
         },
-        body: JSON.stringify({
-          [editingCell.field]: editingCell.field === 'completion' ? parseInt(editValue) : editValue
-        })
+        body: JSON.stringify(updateData)
       })
 
       if (response.ok) {
         setEditingCell(null)
         setEditValue('')
         onUpdate()
+      } else {
+        // Get the error response body for debugging
+        const errorData = await response.text()
+        console.error('Failed to update work item:', response.status, errorData)
+        
+        // Try to parse as JSON if possible
+        try {
+          const errorJson = JSON.parse(errorData)
+          console.error('Error details:', errorJson)
+        } catch {
+          // Not JSON, log as text
+          console.error('Error response text:', errorData)
+        }
       }
     } catch (error) {
       console.error('Error updating work item:', error)
@@ -144,12 +181,20 @@ const WorkPlanTable = ({ workItems, onUpdate }: { workItems: WorkItem[], onUpdat
 
   const renderWorkItem = (item: WorkItem, level: number = 0) => {
     const hasChildren = item.children && item.children.length > 0
-    const isExpanded = expandedRows.has(item.id)
+    const isExpanded = currentExpandedRows.has(item.id)
     const paddingLeft = level * 30
+    
+    // Debug logging
+    if (hasChildren) {
+      console.log(`🎯 Rendering parent "${item.title}" - Has ${item.children?.length} children, Expanded: ${isExpanded}`)
+    }
+    if (level > 0) {
+      console.log(`   🔸 Rendering child "${item.title}" at level ${level}`)
+    }
 
     return (
       <Fragment key={item.id}>
-        <Tr>
+        <Tr bg={level > 0 ? 'gray.50' : 'white'}>
           <Td style={{ paddingLeft: `${paddingLeft + 16}px` }}>
             {hasChildren && (
               <IconButton
@@ -158,13 +203,24 @@ const WorkPlanTable = ({ workItems, onUpdate }: { workItems: WorkItem[], onUpdat
                 icon={isExpanded ? <FiChevronDown /> : <FiChevronRight />}
                 onClick={() => toggleExpanded(item.id)}
                 mr={2}
+                aria-label={isExpanded ? "Collapse" : "Expand"}
                 suppressHydrationWarning
               />
             )}
-            {item.id}
+            <IdDisplay 
+              id={item.id}
+              size={level > 0 ? 'xs' : 'sm'}
+              color={level > 0 ? 'gray.600' : 'gray.800'}
+              showFormat={true}
+              showTooltip={true}
+            />
           </Td>
-          <Td>{item.package || 'Pelayanan Umum'}</Td>
-          <Td>
+          <Td minW="120px">
+            <Text fontSize={level > 0 ? 'xs' : 'sm'} fontWeight={level > 0 ? 'normal' : 'medium'}>
+              {level > 0 ? 'REALISASI' : (item.package || 'PELAYANAN UMUM')}
+            </Text>
+          </Td>
+          <Td maxW="350px" minW="250px">
             {editingCell?.id === item.id && editingCell?.field === 'title' ? (
               <Input
                 value={editValue}
@@ -176,15 +232,41 @@ const WorkPlanTable = ({ workItems, onUpdate }: { workItems: WorkItem[], onUpdat
                 suppressHydrationWarning
               />
             ) : (
-              <Text
-                onClick={() => startEdit(item.id, 'title', item.title)}
-                cursor="pointer"
-                _hover={{ bg: 'gray.100' }}
-                p={1}
-                borderRadius="md"
-              >
-                {item.title}
-              </Text>
+              <Box>
+                {level > 0 && (
+                  <Text fontSize="xs" color="gray.500" mb={1} fontWeight="medium">
+                    Realisasi:
+                  </Text>
+                )}
+                <Box>
+                  <Text
+                    onClick={() => startEdit(item.id, 'title', item.title)}
+                    cursor="pointer"
+                    _hover={{ bg: 'gray.100' }}
+                    p={1}
+                    borderRadius="md"
+                    fontSize={level > 0 ? 'sm' : 'md'}
+                    color={level > 0 ? 'gray.700' : 'gray.800'}
+                    fontWeight={level > 0 ? 'normal' : 'medium'}
+                    noOfLines={2}
+                    title={item.title}
+                  >
+                    {item.title}
+                  </Text>
+                  {item.title.length > 100 && (
+                    <Text 
+                      fontSize="xs" 
+                      color="blue.500" 
+                      mt={1}
+                      cursor="pointer"
+                      onClick={() => onViewTask(item)}
+                      _hover={{ textDecoration: 'underline' }}
+                    >
+                      👁️ Click to view full details
+                    </Text>
+                  )}
+                </Box>
+              </Box>
             )}
           </Td>
           <Td>
@@ -318,7 +400,9 @@ const WorkPlanTable = ({ workItems, onUpdate }: { workItems: WorkItem[], onUpdat
               isChecked={item.isMilestone}
               onChange={async (e) => {
                 try {
-                  await fetch(`/api/work-items/${item.id}`, {
+                  // Encode the work item ID to handle IDs with forward slashes
+                  const encodedId = encodeURIComponent(item.id)
+                  await fetch(`/api/work-items/${encodedId}`, {
                     method: 'PUT',
                     headers: {
                       'Content-Type': 'application/json',
@@ -344,29 +428,15 @@ const WorkPlanTable = ({ workItems, onUpdate }: { workItems: WorkItem[], onUpdat
             />
           </Td>
           <Td>
-            <Text fontSize="sm" color="gray.600">
-              {item.dependsOnIds?.join(', ') || 'T-001, T-002'}
-            </Text>
-          </Td>
-          <Td>
-            {(() => {
-              // Use deterministic logic based on item.id to avoid hydration mismatch
-              const isConflict = item.id.length % 3 === 0 || item.completion < 50
-              return (
-                <Badge colorScheme={isConflict ? 'red' : 'green'} size="sm">
-                  {isConflict ? 'Hapus' : 'OK'}
-                </Badge>
-              )
-            })()}
-          </Td>
-          <Td>
             <HStack spacing={1}>
               <IconButton
                 size="sm"
                 variant="ghost"
                 icon={<FiEye />}
                 colorScheme="blue"
-                aria-label="View"
+                aria-label="View Details"
+                title="View Task Details"
+                onClick={() => onViewTask(item)}
                 suppressHydrationWarning
               />
               <IconButton
@@ -377,14 +447,18 @@ const WorkPlanTable = ({ workItems, onUpdate }: { workItems: WorkItem[], onUpdat
                 aria-label="Edit"
                 suppressHydrationWarning
               />
-              <IconButton
-                size="sm"
-                variant="ghost"
-                icon={<FiCopy />}
-                colorScheme="purple"
-                aria-label="Sub"
-                suppressHydrationWarning
-              />
+              {level === 0 && (
+                <IconButton
+                  size="sm"
+                  variant="ghost"
+                  icon={<FiPlus />}
+                  colorScheme="purple"
+                  aria-label="Add Child"
+                  title="Add Realization"
+                  onClick={() => onAddChild(item)}
+                  suppressHydrationWarning
+                />
+              )}
               <IconButton
                 size="sm"
                 variant="ghost"
@@ -392,6 +466,7 @@ const WorkPlanTable = ({ workItems, onUpdate }: { workItems: WorkItem[], onUpdat
                 colorScheme="red"
                 aria-label="Delete"
                 suppressHydrationWarning
+                onClick={() => onDelete(item.id)}
               />
             </HStack>
           </Td>
@@ -416,8 +491,6 @@ const WorkPlanTable = ({ workItems, onUpdate }: { workItems: WorkItem[], onUpdat
             <Th>RESOURCE NAMES</Th>
             <Th>MILESTONE</Th>
             <Th>NOTES</Th>
-            <Th>DEPENDS ON</Th>
-            <Th>CONFLICTS</Th>
             <Th>ACTIONS</Th>
           </Tr>
         </Thead>
@@ -454,7 +527,54 @@ function WorkPlanReportContent() {
   const [statusFilter, setStatusFilter] = useState('')
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
   const [selectedProjectId, setSelectedProjectId] = useState<string>('')
+  const [showAddWorkItem, setShowAddWorkItem] = useState(false)
+  const [showAddChildModal, setShowAddChildModal] = useState(false)
+  const [selectedParentItem, setSelectedParentItem] = useState<WorkItem | null>(null)
+  const [showViewTaskModal, setShowViewTaskModal] = useState(false)
+  const [selectedViewTask, setSelectedViewTask] = useState<WorkItem | null>(null)
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
+  const [showExcelImport, setShowExcelImport] = useState(false)
   const toast = useToast()
+
+  const handleDownloadTemplate = async () => {
+    try {
+      const response = await fetch('/api/templates/excel', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+        }
+      })
+
+      if (response.ok) {
+        const blob = await response.blob()
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = 'Work_Items_Import_Template.xlsx'
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(url)
+
+        toast({
+          title: 'Template Downloaded',
+          description: 'Excel template berhasil didownload',
+          status: 'success',
+          duration: 3000
+        })
+      } else {
+        throw new Error('Failed to download template')
+      }
+    } catch (error) {
+      console.error('Download template error:', error)
+      toast({
+        title: 'Download Gagal',
+        description: 'Gagal mendownload template Excel. Silakan coba lagi.',
+        status: 'error',
+        duration: 3000
+      })
+    }
+  }
 
   const breadcrumbs = [
     { label: 'Home', href: '/dashboard' },
@@ -493,8 +613,32 @@ function WorkPlanReportContent() {
 
       if (response.ok) {
         const data = await response.json()
+        
         // Handle both formats: direct array or object with workItems property
-        setWorkItems(data.workItems || data)
+        const workItemsData = data.workItems || data
+        
+        // Debug: Log children for troubleshooting
+        workItemsData.forEach((item: WorkItem, index: number) => {
+          if (item.children && item.children.length > 0) {
+            console.log(`🔍 Parent "${item.title}" has ${item.children.length} children:`, item.children.map(child => child.title))
+          }
+        })
+        
+        setWorkItems(workItemsData)
+        
+        // Auto-expand parent items that have children
+        const itemsWithChildren = new Set<string>()
+        workItemsData.forEach((item: WorkItem) => {
+          if (item.children && item.children.length > 0) {
+            itemsWithChildren.add(item.id)
+            console.log(`📂 Auto-expanding parent: ${item.title} (${item.id})`)
+          }
+        })
+        
+        if (itemsWithChildren.size > 0) {
+          setExpandedRows(itemsWithChildren)
+          console.log('✅ Auto-expanded items:', Array.from(itemsWithChildren))
+        }
       } else {
         throw new Error('Failed to fetch work items')
       }
@@ -526,7 +670,62 @@ function WorkPlanReportContent() {
     return () => clearTimeout(timeoutId)
   }, [selectedProjectId, searchTerm, packageFilter, statusFilter])
 
-  const exportToPDF = async (format: 'pdf' | 'word' = 'pdf') => {
+  const handleAddChildItem = (parentItem: WorkItem) => {
+    setSelectedParentItem(parentItem)
+    setShowAddChildModal(true)
+  }
+
+  const handleViewTask = (workItem: WorkItem) => {
+    setSelectedViewTask(workItem)
+    setShowViewTaskModal(true)
+  }
+
+  const handleDeleteWorkItem = async (workItemId: string) => {
+    if (!confirm('Are you sure you want to delete this work item?')) {
+      return
+    }
+
+    try {
+      // Encode the workItemId to handle IDs with forward slashes
+      const encodedWorkItemId = encodeURIComponent(workItemId)
+      const response = await fetch(`/api/work-items/${encodedWorkItemId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+        }
+      })
+
+      if (response.ok) {
+        toast({
+          title: 'Success',
+          description: 'Work item deleted successfully',
+          status: 'success',
+          duration: 3000
+        })
+        fetchWorkItems() // Refresh the list
+      } else {
+        let errorMessage = 'Failed to delete work item'
+        try {
+          const errorData = await response.json()
+          errorMessage = errorData.error || errorMessage
+        } catch (jsonError) {
+          // If response is not JSON (e.g., HTML error page), use status text
+          errorMessage = `${response.status}: ${response.statusText}` || errorMessage
+        }
+        throw new Error(errorMessage)
+      }
+    } catch (error) {
+      console.error('Error deleting work item:', error)
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to delete work item',
+        status: 'error',
+        duration: 3000
+      })
+    }
+  }
+
+  const exportToPDF = async () => {
     try {
       if (!selectedProjectId || !selectedProject) {
         toast({
@@ -548,15 +747,14 @@ function WorkPlanReportContent() {
         return
       }
 
-      const formatText = format === 'pdf' ? 'PDF' : 'Word'
       toast({
-        title: `Generating ${formatText} Report...`,
-        description: `Generating ${formatText.toLowerCase()} report for ${selectedProject?.projectName || 'selected project'}`,
+        title: 'Generating Exact Replica PDF Report...',
+        description: `Creating 100% replica of reference format for ${selectedProject?.projectName || 'selected project'}`,
         status: 'info',
         duration: 2000
       })
 
-      const response = await fetch(`/api/reports/work-plan?format=${format}`, {
+      const response = await fetch('/api/reports/work-plan', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -565,7 +763,7 @@ function WorkPlanReportContent() {
         body: JSON.stringify({
           projectId: selectedProjectId,
           projectName: selectedProject?.projectName || 'Unknown Project',
-          generateForProject: selectedProjectId // Add this for backend compatibility
+          generateForProject: selectedProjectId
         })
       })
 
@@ -585,16 +783,15 @@ function WorkPlanReportContent() {
         const a = document.createElement('a')
         a.href = url
         const projectName = selectedProject?.projectName?.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '_') || 'Project'
-        const fileExtension = format === 'pdf' ? 'pdf' : 'docx'
-        a.download = `Docking_Report_${projectName}_${new Date().toISOString().split('T')[0]}.${fileExtension}`
+        a.download = `Docking_Report_${projectName}_${new Date().toISOString().split('T')[0]}.pdf`
         document.body.appendChild(a)
         a.click()
         document.body.removeChild(a)
         URL.revokeObjectURL(url)
 
         toast({
-          title: 'Docking Report Generated',
-          description: `Report for ${selectedProject?.projectName} generated successfully`,
+          title: 'Exact Replica Docking Report Generated',
+          description: `Perfect 100% replica of reference format generated for ${selectedProject?.projectName}`,
           status: 'success',
           duration: 4000
         })
@@ -604,10 +801,10 @@ function WorkPlanReportContent() {
         throw new Error(`Failed to generate report: ${response.status} - ${errorText}`)
       }
     } catch (error) {
-      console.error(`Error generating ${format} report:`, error)
+      console.error('Error generating PDF report:', error)
       toast({
         title: 'Error',
-        description: `Failed to generate ${format === 'pdf' ? 'PDF' : 'Word'} report. Please try again.`,
+        description: 'Failed to generate PDF report. Please try again.',
         status: 'error',
         duration: 3000
       })
@@ -657,11 +854,9 @@ function WorkPlanReportContent() {
     return matchesResource
   })
 
-  const totalTasks = workItems.length
-  const avgComplete = Math.round(workItems.reduce((sum, item) => sum + item.completion, 0) / totalTasks) || 0
-  const milestones = workItems.filter(item => item.isMilestone).length
-  // Use deterministic calculation for conflicts to avoid hydration mismatch  
-  const conflicts = workItems.filter(item => item.completion < 50).length
+  const totalTasks = filteredItems.length
+  const avgComplete = Math.round(filteredItems.reduce((sum, item) => sum + item.completion, 0) / totalTasks) || 0
+  const milestones = filteredItems.filter(item => item.isMilestone).length
 
   return (
     <ClientOnlyLayout currentModule="work-plan-report" breadcrumbs={breadcrumbs}>
@@ -716,29 +911,58 @@ function WorkPlanReportContent() {
                 )}
                 {selectedProjectId && (
                   <Button 
+                    leftIcon={<FiDownload />} 
+                    colorScheme="teal" 
+                    size="sm" 
+                    variant="outline"
+                    onClick={handleDownloadTemplate}
+                  >
+                    Download Template
+                  </Button>
+                )}
+                {selectedProjectId && (
+                  <Button 
+                    leftIcon={<FiUpload />} 
+                    colorScheme="orange" 
+                    size="sm" 
+                    variant="outline"
+                    onClick={() => setShowExcelImport(true)}
+                  >
+                    Import Excel
+                  </Button>
+                )}
+                {selectedProjectId && (
+                  <Button 
                     leftIcon={<FiPlus />} 
                     colorScheme="blue" 
                     size="sm" 
-                    suppressHydrationWarning
-                    onClick={() => {
-                      // Add manual work item functionality here later
-                    }}
+                    variant="outline"
+                    onClick={() => setShowAddWorkItem(true)}
                   >
-                    Add Work Item
+                    Add Manual Item
                   </Button>
+                )}
+                {selectedProjectId && (
+                  <CompletionRecalculator 
+                    projectId={selectedProjectId}
+                    onRecalculationComplete={fetchWorkItems}
+                    size="sm"
+                    variant="detailed"
+                  />
                 )}
               </HStack>
 
               {/* Export Actions */}
               <HStack spacing={2}>
-                {/* Export Report Button */}
+                {/* Export Report Button with Full Borders */}
                 <Button 
                   leftIcon={<FiFileText />} 
                   colorScheme="purple" 
                   size="sm" 
                   disabled={!selectedProjectId || workItems.length === 0}
-                  onClick={() => exportToPDF('pdf')}
+                  onClick={exportToPDF}
                   suppressHydrationWarning
+                  title="Generate PDF with exact replica format matching reference 100%"
                 >
                   Export Report
                 </Button>
@@ -846,12 +1070,6 @@ function WorkPlanReportContent() {
                       <Text fontSize="2xl" fontWeight="bold" color="purple.600">{milestones}</Text>
                       <Text fontSize="xs" color="gray.600" fontWeight="medium">MILESTONES</Text>
                     </VStack>
-                    <VStack spacing={1} align="start">
-                      <Text fontSize="2xl" fontWeight="bold" color={conflicts > 0 ? "red.600" : "green.600"}>
-                        {conflicts}
-                      </Text>
-                      <Text fontSize="xs" color="gray.600" fontWeight="medium">CONFLICTS</Text>
-                    </VStack>
                   </HStack>
                 </Box>
               )}
@@ -901,12 +1119,59 @@ function WorkPlanReportContent() {
                   </Box>
                 </Box>
               ) : (
-                <WorkPlanTable workItems={filteredItems} onUpdate={fetchWorkItems} />
+                <WorkPlanTable 
+                  workItems={filteredItems} 
+                  onUpdate={fetchWorkItems} 
+                  onDelete={handleDeleteWorkItem} 
+                  onAddChild={handleAddChildItem}
+                  onViewTask={handleViewTask}
+                  projectId={selectedProjectId}
+                  expandedRows={expandedRows}
+                  setExpandedRows={setExpandedRows}
+                />
               )}
             </CardBody>
           </Card>
         </VStack>
       </Container>
+      
+      {/* Add Work Item Modal */}
+      <AddWorkItemModal 
+        isOpen={showAddWorkItem}
+        onClose={() => setShowAddWorkItem(false)}
+        projectId={selectedProjectId}
+        onWorkItemAdded={fetchWorkItems}
+      />
+      
+      {/* Add Child Work Item Modal */}
+      <AddChildWorkItemModal 
+        isOpen={showAddChildModal}
+        onClose={() => {
+          setShowAddChildModal(false)
+          setSelectedParentItem(null)
+        }}
+        parentItem={selectedParentItem}
+        projectId={selectedProjectId}
+        onWorkItemAdded={fetchWorkItems}
+      />
+      
+      {/* View Task Details Modal */}
+      <ViewTaskModal 
+        isOpen={showViewTaskModal}
+        onClose={() => {
+          setShowViewTaskModal(false)
+          setSelectedViewTask(null)
+        }}
+        workItem={selectedViewTask}
+      />
+      
+      {/* Excel Import Modal */}
+      <ExcelImportModal 
+        isOpen={showExcelImport}
+        onClose={() => setShowExcelImport(false)}
+        projectId={selectedProjectId}
+        onImportSuccess={fetchWorkItems}
+      />
     </ClientOnlyLayout>
   )
 }

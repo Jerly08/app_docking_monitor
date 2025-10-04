@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FRD MT. FERIHAS SEJAHTERA | 2025</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #ffffff;
+            font-size: 11px;
+            overflow-x: auto;
+        }
+
+        .container {
+            width: 100%;
+            min-width: 1200px;
+        }
+
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid #a0a0a0;
+            table-layout: fixed;
+        }
+
+        /* Header styling yang presisi seperti MS Project */
+        .table-header th {
+            background: linear-gradient(to bottom, #f8f9fa 0%, #e9ecef 50%, #dee2e6 100%);
+            border: 1px solid #a0a0a0;
+            padding: 4px 2px;
+            text-align: center;
+            font-size: 9px;
+            font-weight: normal;
+            color: #000;
+            height: 22px;
+            vertical-align: middle;
+            position: relative;
+        }
+
+        /* Month header yang lebih besar */
+        .month-header {
+            background: linear-gradient(to bottom, #f0f4f7 0%, #d6e4f0 100%);
+            font-size: 10px;
+            font-weight: bold;
+            height: 20px;
+            border: 1px solid #a0a0a0;
+        }
+
+        .task-row {
+            height: 22px;
+            border-bottom: 1px solid #d0d0d0;
+        }
+
+        .task-row:nth-child(odd) {
+            background-color: #ffffff;
+        }
+
+        .task-row:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        .task-row td {
+            border: 1px solid #d0d0d0;
+            padding: 2px 3px;
+            font-size: 9px;
+            vertical-align: middle;
+            height: 22px;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+        /* Column widths yang presisi */
+        .task-id {
+            width: 35px;
+            text-align: center;
+            font-weight: normal;
+            background-color: #f8f9fa;
+        }
+
+        .task-name {
+            width: 280px;
+            text-align: left;
+            padding-left: 4px;
+            font-size: 9px;
+        }
+
+        .duration {
+            width: 70px;
+            text-align: center;
+            font-size: 9px;
+        }
+
+        .start, .finish {
+            width: 80px;
+            text-align: center;
+            font-size: 9px;
+        }
+
+        .complete {
+            width: 75px;
+            text-align: center;
+            font-size: 9px;
+            font-weight: bold;
+        }
+
+        .resource {
+            width: 100px;
+            text-align: center;
+            font-size: 9px;
+        }
+
+        /* Timeline columns - daily */
+        .timeline-col {
+            width: 18px;
+            padding: 0;
+            position: relative;
+            background-color: #ffffff;
+            border: 1px solid #d0d0d0;
+            vertical-align: middle;
+        }
+
+        /* Gantt container */
+        .gantt-container {
+            position: relative;
+            height: 22px;
+            width: 100%;
+        }
+
+        /* Gantt bars - style yang presisi */
+        .gantt-bar {
+            position: absolute;
+            height: 14px;
+            top: 4px;
+            border-radius: 2px;
+            border: 1px solid rgba(0,0,0,0.2);
+            overflow: hidden;
+            font-size: 7px;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 3px;
+            font-weight: bold;
+        }
+
+        /* Warna yang sesuai gambar asli */
+        .gal-surya-bar {
+            background: linear-gradient(to bottom, #4a90e2 0%, #357abd 100%);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.3);
+        }
+
+        .gal-surya-light {
+            background: linear-gradient(to bottom, #87ceeb 0%, #6bb6ff 100%);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.3);
+        }
+
+        /* Parent task bar - lebih gelap dan tebal */
+        .parent-bar {
+            background: linear-gradient(to bottom, #2c3e50 0%, #34495e 100%);
+            height: 16px;
+            top: 3px;
+            border: 1px solid #1a252f;
+        }
+
+        /* Highlighted rows - kuning */
+        .highlight-row {
+            background-color: #fff3cd !important;
+        }
+
+        .highlight-row td {
+            background-color: #fff3cd !important;
+        }
+
+        /* Progress completion colors */
+        .percent-100 {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .percent-75 {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .percent-50 {
+            background-color: #ffeaa7;
+            color: #856404;
+        }
+
+        .percent-0 {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        /* Sub-task indentation */
+        .sub-task {
+            padding-left: 15px !important;
+            font-size: 8px;
+        }
+
+        /* Timeline header days */
+        .day-header {
+            font-size: 8px;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            height: 22px;
+        }
+
+        /* Progress text on bars */
+        .progress-text {
+            position: absolute;
+            right: 2px;
+            color: white;
+            font-size: 7px;
+            font-weight: bold;
+            text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
+        }
+
+        /* Multi-column gantt bars */
+        .gantt-multi {
+            display: flex;
+            height: 22px;
+            align-items: center;
+        }
+
+        .gantt-segment {
+            height: 14px;
+            margin: 0 1px;
+            position: relative;
+            border-radius: 2px;
+            border: 1px solid rgba(0,0,0,0.2);
+        }
+
+        /* Weekend columns styling */
+        .weekend-col {
+            background-color: #f0f0f0 !important;
+        }
+
+        /* Update info di bagian bawah */
+        .footer-info {
+            height: 25px;
+            border-top: 2px solid #a0a0a0;
+            background-color: #f8f9fa;
+            position: relative;
+            font-size: 8px;
+            color: #666;
+            padding: 5px 10px;
+        }
+
+        .update-info {
+            float: left;
+        }
+
+        .page-info {
+            float: right;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <table class="report-table">
+            <!-- Timeline Header -->
+            <thead>
+                <tr>
+                    <th colspan="6" class="table-header"></th>
+                    <th colspan="7" class="month-header">Aug 24 '25</th>
+                    <th colspan="7" class="month-header">Aug 31 '25</th>
+                </tr>
+                <tr class="table-header">
+                    <th>ID</th>
+                    <th>Task Name</th>
+                    <th>Duration</th>
+                    <th>Start</th>
+                    <th>Finish</th>
+                    <th>% Complete</th>
+                    <th>Resource Names</th>
+                    <th class="day-header">S</th>
+                    <th class="day-header">M</th>
+                    <th class="day-header">T</th>
+                    <th class="day-header">W</th>
+                    <th class="day-header">T</th>
+                    <th class="day-header">F</th>
+                    <th class="day-header weekend-col">S</th>
+                    <th class="day-header weekend-col">S</th>
+                    <th class="day-header">M</th>
+                    <th class="day-header">T</th>
+                    <th class="day-header">W</th>
+                    <th class="day-header">T</th>
+                    <th class="day-header">F</th>
+                    <th class="day-header weekend-col">S</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Project Header -->
+                <tr class="task-row highlight-row">
+                    <td class="task-id">1</td>
+                    <td class="task-name"><strong>FRD MT. FERIHAS SEJAHTERA | 2025</strong></td>
+                    <td class="duration">16 days</td>
+                    <td class="start">Sat 8/23/25</td>
+                    <td class="finish">Sun 9/7/25</td>
+                    <td class="complete percent-75"><strong>73%</strong></td>
+                    <td class="resource"></td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar parent-bar" style="width: 100%;">
+                                <span class="progress-text">73%</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar parent-bar" style="width: 100%;"></div>
+                        </div>
+                    </td>
+                    <td class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar parent-bar" style="width: 100%;"></div>
+                        </div>
+                    </td>
+                    <td class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar parent-bar" style="width: 100%;"></div>
+                        </div>
+                    </td>
+                    <td class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar parent-bar" style="width: 100%;"></div>
+                        </div>
+                    </td>
+                    <td class="timeline-col weekend-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar parent-bar" style="width: 100%;"></div>
+                        </div>
+                    </td>
+                    <td class="timeline-col weekend-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar parent-bar" style="width: 100%;"></div>
+                        </div>
+                    </td>
+                    <td class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar parent-bar" style="width: 100%;"></div>
+                        </div>
+                    </td>
+                    <td class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar parent-bar" style="width: 100%;"></div>
+                        </div>
+                    </td>
+                    <td class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar parent-bar" style="width: 100%;"></div>
+                        </div>
+                    </td>
+                    <td class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar parent-bar" style="width: 100%;"></div>
+                        </div>
+                    </td>
+                    <td class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar parent-bar" style="width: 100%;"></div>
+                        </div>
+                    </td>
+                    <td class="timeline-col weekend-col"></td>
+                </tr>
+
+                <!-- Task 2: Tiba di Dock -->
+                <tr class="task-row">
+                    <td class="task-id">2</td>
+                    <td class="task-name">Tiba di Dock</td>
+                    <td class="duration">1 day</td>
+                    <td class="start">Sat 8/23/25</td>
+                    <td class="finish">Sat 8/23/25</td>
+                    <td class="complete percent-100"><strong>100%</strong></td>
+                    <td class="resource">Gal Surya</td>
+                    <td class="timeline-col weekend-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar gal-surya-bar" style="width: 100%;">
+                                <span class="progress-text">100%</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col weekend-col"></td>
+                    <td class="timeline-col weekend-col"></td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col weekend-col"></td>
+                </tr>
+
+                <!-- Task 3: Naik Dock -->
+                <tr class="task-row">
+                    <td class="task-id">3</td>
+                    <td class="task-name">Naik Dock</td>
+                    <td class="duration">1 day</td>
+                    <td class="start">Sat 8/23/25</td>
+                    <td class="finish">Sat 8/23/25</td>
+                    <td class="complete percent-100"><strong>100%</strong></td>
+                    <td class="resource">Gal Surya</td>
+                    <td class="timeline-col weekend-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar gal-surya-light" style="width: 100%;">
+                                <span class="progress-text">100%</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col weekend-col"></td>
+                    <td class="timeline-col weekend-col"></td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col weekend-col"></td>
+                </tr>
+
+                <!-- Task 4: Arrival Meeting -->
+                <tr class="task-row">
+                    <td class="task-id">4</td>
+                    <td class="task-name">Arrival Meeting</td>
+                    <td class="duration">1 day</td>
+                    <td class="start">Mon 8/25/25</td>
+                    <td class="finish">Mon 8/25/25</td>
+                    <td class="complete percent-100"><strong>100%</strong></td>
+                    <td class="resource">Gal Surya</td>
+                    <td class="timeline-col weekend-col"></td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar gal-surya-bar" style="width: 100%;">
+                                <span class="progress-text">100%</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col weekend-col"></td>
+                    <td class="timeline-col weekend-col"></td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col weekend-col"></td>
+                </tr>
+
+                <!-- Task 5: Progress Meeting 1 -->
+                <tr class="task-row">
+                    <td class="task-id">5</td>
+                    <td class="task-name">Progress Meeting 1</td>
+                    <td class="duration">1 day</td>
+                    <td class="start">Fri 8/29/25</td>
+                    <td class="finish">Fri 8/29/25</td>
+                    <td class="complete percent-100"><strong>100%</strong></td>
+                    <td class="resource">Gal Surya</td>
+                    <td class="timeline-col weekend-col"></td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar gal-surya-bar" style="width: 100%;">
+                                <span class="progress-text">100%</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="timeline-col weekend-col"></td>
+                    <td class="timeline-col weekend-col"></td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col weekend-col"></td>
+                </tr>
+
+                <!-- Task 6: Progress Meeting 2 -->
+                <tr class="task-row">
+                    <td class="task-id">6</td>
+                    <td class="task-name">Progress Meeting 2</td>
+                    <td class="duration">1 day</td>
+                    <td class="start">Thu 9/4/25</td>
+                    <td class="finish">Thu 9/4/25</td>
+                    <td class="complete percent-100"><strong>100%</strong></td>
+                    <td class="resource">Gal Surya</td>
+                    <td class="timeline-col weekend-col"></td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col weekend-col"></td>
+                    <td class="timeline-col weekend-col"></td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar gal-surya-bar" style="width: 100%;">
+                                <span class="progress-text">100%</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col weekend-col"></td>
+                </tr>
+
+                <!-- Task 7: Turun Dock -->
+                <tr class="task-row">
+                    <td class="task-id">7</td>
+                    <td class="task-name">Turun Dock</td>
+                    <td class="duration">1 day</td>
+                    <td class="start">Sun 9/7/25</td>
+                    <td class="finish">Sun 9/7/25</td>
+                    <td class="complete percent-0"><strong>0%</strong></td>
+                    <td class="resource">Gal Surya</td>
+                    <td class="timeline-col weekend-col"></td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col weekend-col"></td>
+                    <td class="timeline-col weekend-col"></td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col weekend-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar gal-surya-light" style="width: 100%; opacity: 0.5;">
+                                <span class="progress-text">0%</span>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Task 8: Pekerjaan Umum (Parent) -->
+                <tr class="task-row highlight-row">
+                    <td class="task-id">8</td>
+                    <td class="task-name"><strong>Pekerjaan Umum</strong></td>
+                    <td class="duration">16 days</td>
+                    <td class="start">Sat 8/23/25</td>
+                    <td class="finish">Sun 9/7/25</td>
+                    <td class="complete percent-75"><strong>75%</strong></td>
+                    <td class="resource"></td>
+                    <td class="timeline-col weekend-col"></td>
+                    <td class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar parent-bar" style="width: 100%;">
+                                <span class="progress-text">75%</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar parent-bar" style="width: 100%;"></div>
+                        </div>
+                    </td>
+                    <td class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar parent-bar" style="width: 100%;"></div>
+                        </div>
+                    </td>
+                    <td class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar parent-bar" style="width: 100%;"></div>
+                        </div>
+                    </td>
+                    <td class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar parent-bar" style="width: 100%;"></div>
+                        </div>
+                    </td>
+                    <td class="timeline-col weekend-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar parent-bar" style="width: 100%;"></div>
+                        </div>
+                    </td>
+                    <td class="timeline-col weekend-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar parent-bar" style="width: 100%;"></div>
+                        </div>
+                    </td>
+                    <td class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar parent-bar" style="width: 100%;"></div>
+                        </div>
+                    </td>
+                    <td class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar parent-bar" style="width: 100%;"></div>
+                        </div>
+                    </td>
+                    <td class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar parent-bar" style="width: 100%;"></div>
+                        </div>
+                    </td>
+                    <td class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar parent-bar" style="width: 100%;"></div>
+                        </div>
+                    </td>
+                    <td class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar parent-bar" style="width: 100%;"></div>
+                        </div>
+                    </td>
+                    <td class="timeline-col weekend-col"></td>
+                </tr>
+
+                <!-- Task 9: Sub-task -->
+                <tr class="task-row">
+                    <td class="task-id">9</td>
+                    <td class="task-name sub-task">Setibanya di muara, kapal dipandu masuk perairan dock dibantu 1 (satu) tugboat.</td>
+                    <td class="duration">16 days</td>
+                    <td class="start">Sat 8/23/25</td>
+                    <td class="finish">Sun 9/7/25</td>
+                    <td class="complete percent-75"><strong>75%</strong></td>
+                    <td class="resource">Gal Surya</td>
+                    <td class="timeline-col weekend-col"></td>
+                    <td class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar gal-surya-bar" style="width: 100%;">
+                                <span class="progress-text">75%</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar gal-surya-bar" style="width: 100%;"></div>
+                        </div>
+                    </td>
+                    <td class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar gal-surya-bar" style="width: 100%;"></div>
+                        </div>
+                    </td>
+                    <td class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar gal-surya-bar" style="width: 100%;"></div>
+                        </div>
+                    </td>
+                    <td class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar gal-surya-bar" style="width: 100%;"></div>
+                        </div>
+                    </td>
+                    <td class="timeline-col weekend-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar gal-surya-bar" style="width: 100%;"></div>
+                        </div>
+                    </td>
+                    <td class="timeline-col weekend-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar gal-surya-bar" style="width: 100%;"></div>
+                        </div>
+                    </td>
+                    <td class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar gal-surya-bar" style="width: 100%;"></div>
+                        </div>
+                    </td>
+                    <td class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar gal-surya-bar" style="width: 100%;"></div>
+                        </div>
+                    </td>
+                    <td class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar gal-surya-bar" style="width: 100%;"></div>
+                        </div>
+                    </td>
+                    <td class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar gal-surya-light" style="width: 100%;"></div>
+                        </div>
+                    </td>
+                    <td class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar gal-surya-light" style="width: 100%;"></div>
+                        </div>
+                    </td>
+                    <td class="timeline-col weekend-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar gal-surya-light" style="width: 100%;"></div>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Additional tasks following the same pattern... -->
+                <!-- Task 10: Assistensi naik/turun dock -->
+                <tr class="task-row">
+                    <td class="task-id">10</td>
+                    <td class="task-name sub-task">Assistensi naik/turun dock dan penataan panel</td>
+                    <td class="duration">14 days</td>
+                    <td class="start">Sat 8/23/25</td>
+                    <td class="finish">Fri 9/5/25</td>
+                    <td class="complete percent-75"><strong>75%</strong></td>
+                    <td class="resource">Gal Surya</td>
+                    <td class="timeline-col weekend-col"></td>
+                    <td class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar gal-surya-bar" style="width: 100%;">
+                                <span class="progress-text">75%</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar gal-surya-bar" style="width: 100%;"></div>
+                        </div>
+                    </td>
+                    <td class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar gal-surya-bar" style="width: 100%;"></div>
+                        </div>
+                    </td>
+                    <td class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar gal-surya-bar" style="width: 100%;"></div>
+                        </div>
+                    </td>
+                    <td class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar gal-surya-bar" style="width: 100%;"></div>
+                        </div>
+                    </td>
+                    <td class="timeline-col weekend-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar gal-surya-bar" style="width: 100%;"></div>
+                        </div>
+                    </td>
+                    <td class="timeline-col weekend-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar gal-surya-bar" style="width: 100%;"></div>
+                        </div>
+                    </td>
+                    <td class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar gal-surya-bar" style="width: 100%;"></div>
+                        </div>
+                    </td>
+                    <td class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar gal-surya-bar" style="width: 100%;"></div>
+                        </div>
+                    </td>
+                    <td class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar gal-surya-bar" style="width: 100%;"></div>
+                        </div>
+                    </td>
+                    <td class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar gal-surya-light" style="width: 100%;"></div>
+                        </div>
+                    </td>
+                    <td class="timeline-col"></td>
+                    <td class="timeline-col weekend-col"></td>
+                </tr>
+
+            </tbody>
+        </table>
+
+        <!-- Footer Info -->
+        <div class="footer-info">
+            <div class="update-info">Update: 30-08-2025</div>
+            <div class="page-info">Page 1 / 6</div>
+        </div>
+    </div>
+</body>
+</html>

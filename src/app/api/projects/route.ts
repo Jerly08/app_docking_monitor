@@ -80,42 +80,125 @@ export async function GET(request: NextRequest) {
 // POST /api/projects - Create new project
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
+    console.log('Creating new project...')
+    
+    let body
+    try {
+      body = await request.json()
+      console.log('Request body received:', body)
+    } catch (parseError) {
+      console.error('Failed to parse request body:', parseError)
+      return NextResponse.json(
+        { error: 'Invalid JSON in request body' },
+        { status: 400 }
+      )
+    }
     
     // Validate required fields
     const { projectName, vesselName } = body
+    console.log('Validating fields:', { projectName, vesselName })
+    
     if (!projectName || !vesselName) {
+      const errorMessage = 'Project name and vessel name are required'
+      console.error('Validation failed:', errorMessage)
       return NextResponse.json(
-        { error: 'Project name and vessel name are required' },
+        { error: errorMessage },
         { status: 400 }
       )
     }
 
-    // Check if project with same vessel name already exists for active projects
+    if (typeof projectName !== 'string' || typeof vesselName !== 'string') {
+      const errorMessage = 'Project name and vessel name must be strings'
+      console.error('Type validation failed:', errorMessage)
+      return NextResponse.json(
+        { error: errorMessage },
+        { status: 400 }
+      )
+    }
+
+    if (projectName.trim().length === 0 || vesselName.trim().length === 0) {
+      const errorMessage = 'Project name and vessel name cannot be empty'
+      console.error('Empty string validation failed:', errorMessage)
+      return NextResponse.json(
+        { error: errorMessage },
+        { status: 400 }
+      )
+    }
+
+    console.log('Checking for existing project with vessel name:', vesselName)
+    
+    // Check for projects with same vessel name and customer to avoid true duplicates
+    // But allow same vessel with different customers or different project names
     const existingProject = await prisma.project.findFirst({
       where: {
-        vesselName: vesselName,
+        vesselName: vesselName.trim(),
+        customerCompany: body.customerCompany || null,
+        projectName: projectName.trim(),
         status: { not: 'COMPLETED' }
       }
     })
 
     if (existingProject) {
+      const errorMessage = `Identical project already exists: same vessel (${vesselName}), customer (${body.customerCompany}), and project name (${projectName})`
+      console.error('Exact duplicate project found:', errorMessage)
       return NextResponse.json(
-        { error: `Active project already exists for vessel ${vesselName}` },
+        { error: errorMessage },
         { status: 409 }
       )
     }
+    
+    // Optional: Log if there are other projects with same vessel (for monitoring)
+    const sameVesselProjects = await prisma.project.findMany({
+      where: {
+        vesselName: vesselName.trim(),
+        status: { not: 'COMPLETED' },
+        NOT: {
+          AND: [
+            { customerCompany: body.customerCompany || null },
+            { projectName: projectName.trim() }
+          ]
+        }
+      },
+      select: {
+        id: true,
+        projectName: true,
+        customerCompany: true
+      }
+    })
+    
+    if (sameVesselProjects.length > 0) {
+      console.log(`Info: Creating new project for vessel ${vesselName}. Existing projects for same vessel:`, 
+        sameVesselProjects.map(p => `${p.projectName} (${p.customerCompany || 'No customer'})`)
+      )
+    }
+
+    // Prepare customer information to store in vesselSpecs for now
+    const customerInfo = {
+      customerId: body.customerId || null,
+      customerContactPerson: body.customerContactPerson || null,
+      customerPhone: body.customerPhone || null,
+      customerEmail: body.customerEmail || null,
+      customerAddress: body.customerAddress || null,
+      ...(body.vesselSpecs || {})
+    }
+
+    console.log('Creating project with data:', {
+      projectName: projectName.trim(),
+      vesselName: vesselName.trim(),
+      customerCompany: body.customerCompany,
+      status: body.status || 'ACTIVE'
+    })
 
     const project = await prisma.project.create({
       data: {
-        projectName,
-        vesselName,
-        customerCompany: body.customerCompany,
-        vesselSpecs: body.vesselSpecs || {},
+        projectName: projectName.trim(),
+        vesselName: vesselName.trim(),
+        customerCompany: body.customerCompany || null,
+        vesselSpecs: customerInfo,
         status: body.status || 'ACTIVE',
         startDate: body.startDate ? new Date(body.startDate) : null,
         endDate: body.endDate ? new Date(body.endDate) : null,
-        notes: body.notes
+        notes: body.notes || null
       },
       include: {
         _count: {
@@ -126,11 +209,38 @@ export async function POST(request: NextRequest) {
       }
     })
 
+    console.log('Project created successfully:', project.id)
     return NextResponse.json(project, { status: 201 })
   } catch (error) {
     console.error('Error creating project:', error)
+    
+    // Check if it's a Prisma error
+    if (error instanceof Error) {
+      // Handle specific Prisma errors
+      if (error.message.includes('Unique constraint')) {
+        return NextResponse.json(
+          { error: 'A project with this information already exists' },
+          { status: 409 }
+        )
+      }
+      
+      if (error.message.includes('Foreign key constraint')) {
+        return NextResponse.json(
+          { error: 'Referenced data does not exist' },
+          { status: 400 }
+        )
+      }
+      
+      // Log the full error for debugging
+      console.error('Full error details:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      })
+    }
+    
     return NextResponse.json(
-      { error: 'Failed to create project' },
+      { error: 'Failed to create project. Please try again.' },
       { status: 500 }
     )
   }

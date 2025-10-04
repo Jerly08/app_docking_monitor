@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FRD MT. FERIHAS SEJAHTERA | 2025</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #ffffff;
+            font-size: 11px;
+        }
+
+        .container {
+            width: 100%;
+            overflow-x: auto;
+            position: relative;
+        }
+
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid #c0c0c0;
+        }
+
+        /* Header styling yang mirip MS Project */
+        .table-header th {
+            background: linear-gradient(to bottom, #f0f4f7 0%, #d6e4f0 100%);
+            border: 1px solid #c0c0c0;
+            padding: 6px 4px;
+            text-align: center;
+            font-size: 10px;
+            font-weight: normal;
+            color: #000;
+            height: 20px;
+            vertical-align: middle;
+        }
+
+        .task-row {
+            height: 20px;
+        }
+
+        .task-row:nth-child(odd) {
+            background-color: #ffffff;
+        }
+
+        .task-row:nth-child(even) {
+            background-color: #f8f8f8;
+        }
+
+        .task-row td {
+            border: 1px solid #c0c0c0;
+            padding: 2px 4px;
+            font-size: 9px;
+            vertical-align: middle;
+            height: 20px;
+        }
+
+        /* Column widths yang presisi */
+        .task-id {
+            width: 25px;
+            text-align: center;
+            font-weight: normal;
+        }
+
+        .task-name {
+            width: 220px;
+            text-align: left;
+            padding-left: 4px;
+        }
+
+        .duration {
+            width: 60px;
+            text-align: center;
+        }
+
+        .start, .finish {
+            width: 70px;
+            text-align: center;
+            font-size: 8px;
+        }
+
+        .complete {
+            width: 50px;
+            text-align: center;
+        }
+
+        .resource {
+            width: 80px;
+            text-align: center;
+            font-size: 8px;
+        }
+
+        /* Timeline columns */
+        .timeline-col {
+            width: 30px;
+            padding: 0;
+            position: relative;
+            background-color: #f8f8f8;
+            border: 1px solid #c0c0c0;
+        }
+
+        /* Gantt bar styling yang lebih presisi */
+        .gantt-container {
+            position: relative;
+            height: 20px;
+        }
+
+        .gantt-bar {
+            height: 12px;
+            position: absolute;
+            border-radius: 1px;
+            font-size: 8px;
+            top: 4px;
+            border: 1px solid rgba(0,0,0,0.3);
+        }
+
+        /* Warna yang sesuai gambar asli */
+        .gal-surya-bar {
+            background: linear-gradient(to bottom, #4a90e2 0%, #357abd 100%);
+        }
+
+        .bro-bar {
+            background: linear-gradient(to bottom, #ff9800 0%, #e68a00 100%);
+        }
+
+        .ks-bar {
+            background: linear-gradient(to bottom, #5cb3cc 0%, #46a3be 100%);
+        }
+
+        .parent-bar {
+            background: linear-gradient(to bottom, #666666 0%, #4d4d4d 100%);
+            height: 14px;
+            top: 3px;
+        }
+
+        /* Progress indicator */
+        .progress {
+            position: absolute;
+            height: 100%;
+            left: 0;
+            top: 0;
+            background-color: rgba(255,255,255,0.3);
+            border-right: 2px solid rgba(0,0,0,0.4);
+        }
+
+        /* Milestone styling dengan 2 garis biru */
+        .milestone {
+            position: absolute;
+            width: 2px;
+            height: 20px;
+            top: 0;
+        }
+
+        .milestone-light {
+            background: linear-gradient(to bottom, #87ceeb 0%, #6bb6ff 100%);
+            border: 1px solid #5ba3d4;
+        }
+
+        .milestone-dark {
+            background: linear-gradient(to bottom, #4682b4 0%, #2e5984 100%);
+            border: 1px solid #1e3a5f;
+            margin-left: 3px;
+        }
+
+        .milestone-container {
+            position: relative;
+            height: 20px;
+            display: flex;
+        }
+
+        /* Sub-task indentation */
+        .sub-task {
+            padding-left: 15px;
+        }
+
+        /* Timeline header dates */
+        .timeline-header {
+            font-size: 9px;
+            text-align: center;
+            border: 1px solid #c0c0c0;
+            background: linear-gradient(to bottom, #f0f4f7 0%, #d6e4f0 100%);
+            height: 20px;
+        }
+
+        .month-header {
+            font-size: 10px;
+            font-weight: bold;
+            background: linear-gradient(to bottom, #f0f4f7 0%, #d6e4f0 100%);
+            border: 1px solid #c0c0c0;
+            height: 20px;
+        }
+
+        /* Highlighted yellow row */
+        .highlight-row {
+            background-color: #ffffc0 !important;
+        }
+
+        /* Update info */
+        .update-info {
+            position: absolute;
+            bottom: 5px;
+            left: 10px;
+            font-size: 8px;
+            color: #666;
+        }
+
+        .page-info {
+            position: absolute;
+            bottom: 5px;
+            right: 10px;
+            font-size: 8px;
+            color: #666;
+        }
+
+        /* Persentase progress dengan color coding */
+        .percent-cell {
+            text-align: center;
+            color: #000;
+            font-weight: bold;
+            font-size: 9px;
+        }
+
+        .percent-100 {
+            background-color: #92d050;
+        }
+        
+        .percent-75 {
+            background-color: #ffff00;
+        }
+
+        .percent-50 {
+            background-color: #ffc000;
+        }
+
+        .percent-90 {
+            background-color: #92d050;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <table class="report-table">
+            <!-- Top Timeline Header for Month -->
+            <thead>
+                <tr>
+                    <th colspan="7"></th>
+                    <th colspan="7" class="month-header">Aug 24 '25</th>
+                    <th colspan="7" class="month-header">Aug 31 '25</th>
+                </tr>
+                <tr class="table-header">
+                    <th>ID</th>
+                    <th>Task Name</th>
+                    <th>Duration</th>
+                    <th>Start</th>
+                    <th>Finish</th>
+                    <th>% Complete</th>
+                    <th>Resource Names</th>
+                    <th class="timeline-header">M</th>
+                    <th class="timeline-header">T</th>
+                    <th class="timeline-header">W</th>
+                    <th class="timeline-header">T</th>
+                    <th class="timeline-header">F</th>
+                    <th class="timeline-header">S</th>
+                    <th class="timeline-header">S</th>
+                    <th class="timeline-header">M</th>
+                    <th class="timeline-header">T</th>
+                    <th class="timeline-header">W</th>
+                    <th class="timeline-header">T</th>
+                    <th class="timeline-header">F</th>
+                    <th class="timeline-header">S</th>
+                    <th class="timeline-header">S</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Project Header -->
+                <tr class="task-row highlight-row">
+                    <td class="task-id">1</td>
+                    <td class="task-name">FRD MT. FERIHAS SEJAHTERA | 2025</td>
+                    <td class="duration">16 days</td>
+                    <td class="start">Sat 8/23/25</td>
+                    <td class="finish">Sun 9/7/25</td>
+                    <td class="percent-cell percent-75">73%</td>
+                    <td class="resource"></td>
+                    <td colspan="14" class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar parent-bar" style="left: 2%; width: 95%;">
+                                <div class="progress" style="width: 73%;"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Tasks -->
+                <tr class="task-row">
+                    <td class="task-id">2</td>
+                    <td class="task-name">Tiba di Dock</td>
+                    <td class="duration">1 day</td>
+                    <td class="start">Sat 8/23/25</td>
+                    <td class="finish">Sat 8/23/25</td>
+                    <td class="percent-cell percent-100">100%</td>
+                    <td class="resource">Gal Surya</td>
+                    <td colspan="14" class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar gal-surya-bar" style="left: 0; width: 7%;">
+                                <div class="progress" style="width: 100%;"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr class="task-row">
+                    <td class="task-id">3</td>
+                    <td class="task-name">Naik Dock</td>
+                    <td class="duration">1 day</td>
+                    <td class="start">Sat 8/23/25</td>
+                    <td class="finish">Sat 8/23/25</td>
+                    <td class="percent-cell percent-100">100%</td>
+                    <td class="resource">Gal Surya</td>
+                    <td colspan="14" class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar gal-surya-bar" style="left: 0; width: 7%;">
+                                <div class="progress" style="width: 100%;"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr class="task-row">
+                    <td class="task-id">4</td>
+                    <td class="task-name">Arrival Meeting</td>
+                    <td class="duration">1 day</td>
+                    <td class="start">Mon 8/25/25</td>
+                    <td class="finish">Mon 8/25/25</td>
+                    <td class="percent-cell percent-100">100%</td>
+                    <td class="resource">Gal Surya</td>
+                    <td colspan="14" class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar gal-surya-bar" style="left: 14%; width: 7%;">
+                                <div class="progress" style="width: 100%;"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr class="task-row">
+                    <td class="task-id">5</td>
+                    <td class="task-name">Progress Meeting 1</td>
+                    <td class="duration">1 day</td>
+                    <td class="start">Fri 8/29/25</td>
+                    <td class="finish">Fri 8/29/25</td>
+                    <td class="percent-cell percent-100">100%</td>
+                    <td class="resource">Gal Surya</td>
+                    <td colspan="14" class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar gal-surya-bar" style="left: 43%; width: 7%;">
+                                <div class="progress" style="width: 100%;"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr class="task-row">
+                    <td class="task-id">6</td>
+                    <td class="task-name">Progress Meeting 2</td>
+                    <td class="duration">1 day</td>
+                    <td class="start">Thu 9/4/25</td>
+                    <td class="finish">Thu 9/4/25</td>
+                    <td class="percent-cell percent-100">100%</td>
+                    <td class="resource">Gal Surya</td>
+                    <td colspan="14" class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar gal-surya-bar" style="left: 73%; width: 7%;">
+                                <div class="progress" style="width: 100%;"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr class="task-row">
+                    <td class="task-id">7</td>
+                    <td class="task-name">Turun Dock</td>
+                    <td class="duration">1 day</td>
+                    <td class="start">Sun 9/7/25</td>
+                    <td class="finish">Sun 9/7/25</td>
+                    <td class="percent-cell percent-75">0%</td>
+                    <td class="resource">Gal Surya</td>
+                    <td colspan="14" class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar gal-surya-bar" style="left: 93%; width: 7%;">
+                                <div class="progress" style="width: 0%;"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr class="task-row highlight-row">
+                    <td class="task-id">8</td>
+                    <td class="task-name">Pekerjaan Umum</td>
+                    <td class="duration">16 days</td>
+                    <td class="start">Sat 8/23/25</td>
+                    <td class="finish">Sun 9/7/25</td>
+                    <td class="percent-cell percent-75">73%</td>
+                    <td class="resource"></td>
+                    <td colspan="14" class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar parent-bar" style="left: 0; width: 100%;">
+                                <div class="progress" style="width: 73%;"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr class="task-row">
+                    <td class="task-id">9</td>
+                    <td class="task-name sub-task">a. Pekerjaan di ruang kargo, kapal dipasang manhole 16 days</td>
+                    <td class="duration">16 days</td>
+                    <td class="start">Sat 8/23/25</td>
+                    <td class="finish">Sun 9/7/25</td>
+                    <td class="percent-cell percent-75">75%</td>
+                    <td class="resource">Gal Surya</td>
+                    <td colspan="14" class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar gal-surya-bar" style="left: 0; width: 100%;">
+                                <div class="progress" style="width: 75%;"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr class="task-row">
+                    <td class="task-id">10</td>
+                    <td class="task-name sub-task">a. Assistensi naik/turun dock dan penanganan panel</td>
+                    <td class="duration">14 days</td>
+                    <td class="start">Sat 8/23/25</td>
+                    <td class="finish">Fri 9/5/25</td>
+                    <td class="percent-cell percent-75">75%</td>
+                    <td class="resource">Gal Surya</td>
+                    <td colspan="14" class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar gal-surya-bar" style="left: 0; width: 90%;">
+                                <div class="progress" style="width: 75%;"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- UNIT PERAWATAN LAMBUNG & TANKI -->
+                <tr class="task-row highlight-row">
+                    <td class="task-id">25</td>
+                    <td class="task-name">UNIT PERAWATAN LAMBUNG & TANKI</td>
+                    <td class="duration">33 days</td>
+                    <td class="start">Sun 8/24/25</td>
+                    <td class="finish">Sun 9/7/25</td>
+                    <td class="percent-cell percent-75">73%</td>
+                    <td class="resource"></td>
+                    <td colspan="14" class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar parent-bar" style="left: 7%; width: 93%;">
+                                <div class="progress" style="width: 73%;"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr class="task-row">
+                    <td class="task-id">26</td>
+                    <td class="task-name sub-task">Badan Kapal Basah Garis Air (AGA)</td>
+                    <td class="duration">14 days</td>
+                    <td class="start">Sun 8/24/25</td>
+                    <td class="finish">Sat 9/6/25</td>
+                    <td class="percent-cell percent-90">93%</td>
+                    <td class="resource">BRO</td>
+                    <td colspan="14" class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar bro-bar" style="left: 7%; width: 93%;">
+                                <div class="progress" style="width: 93%;"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr class="task-row">
+                    <td class="task-id">27</td>
+                    <td class="task-name sub-task">a. Skrap (70%)</td>
+                    <td class="duration">2 days</td>
+                    <td class="start">Sun 8/24/25</td>
+                    <td class="finish">Mon 8/25/25</td>
+                    <td class="percent-cell percent-100">100%</td>
+                    <td class="resource">BRO</td>
+                    <td colspan="14" class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar bro-bar" style="left: 7%; width: 14%;">
+                                <div class="progress" style="width: 100%;"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr class="task-row">
+                    <td class="task-id">28</td>
+                    <td class="task-name sub-task">b. Water Jet air tawar</td>
+                    <td class="duration">3 days</td>
+                    <td class="start">Sun 8/24/25</td>
+                    <td class="finish">Wed 8/27/25</td>
+                    <td class="percent-cell percent-100">100%</td>
+                    <td class="resource">KS (H)</td>
+                    <td colspan="14" class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar ks-bar" style="left: 7%; width: 28%;">
+                                <div class="progress" style="width: 100%;"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr class="task-row">
+                    <td class="task-id">29</td>
+                    <td class="task-name sub-task">c. Fullblasting (100%)</td>
+                    <td class="duration">7 days</td>
+                    <td class="start">Mon 8/25/25</td>
+                    <td class="finish">Sun 8/31/25</td>
+                    <td class="percent-cell percent-100">100%</td>
+                    <td class="resource">KS</td>
+                    <td colspan="14" class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar ks-bar" style="left: 14%; width: 50%;">
+                                <div class="progress" style="width: 100%;"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Badan Kapal Atas Garis Air (AGA) -->
+                <tr class="task-row">
+                    <td class="task-id">32</td>
+                    <td class="task-name">Badan Kapal Atas Garis Air (AGA)</td>
+                    <td class="duration">14 days</td>
+                    <td class="start">Mon 8/25/25</td>
+                    <td class="finish">Sun 9/7/25</td>
+                    <td class="percent-cell percent-75">82%</td>
+                    <td class="resource"></td>
+                    <td colspan="14" class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="gantt-bar parent-bar" style="left: 14%; width: 86%;">
+                                <div class="progress" style="width: 82%;"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Milestone: Inspection Checkpoint -->
+                <tr class="task-row">
+                    <td class="task-id">33</td>
+                    <td class="task-name">📍 Inspection Checkpoint 1</td>
+                    <td class="duration">0 days</td>
+                    <td class="start">Wed 8/27/25</td>
+                    <td class="finish">Wed 8/27/25</td>
+                    <td class="percent-cell percent-100">100%</td>
+                    <td class="resource">KS (H)</td>
+                    <td colspan="14" class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="milestone-container" style="left: 28%;">
+                                <div class="milestone milestone-light"></div>
+                                <div class="milestone milestone-dark"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Milestone: Progress Review -->
+                <tr class="task-row">
+                    <td class="task-id">34</td>
+                    <td class="task-name">📍 Progress Review Milestone</td>
+                    <td class="duration">0 days</td>
+                    <td class="start">Fri 8/29/25</td>
+                    <td class="finish">Fri 8/29/25</td>
+                    <td class="percent-cell percent-100">100%</td>
+                    <td class="resource">Gal Surya</td>
+                    <td colspan="14" class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="milestone-container" style="left: 43%;">
+                                <div class="milestone milestone-light"></div>
+                                <div class="milestone milestone-dark"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Milestone: Final Inspection -->
+                <tr class="task-row">
+                    <td class="task-id">35</td>
+                    <td class="task-name">📍 Final Quality Check</td>
+                    <td class="duration">0 days</td>
+                    <td class="start">Sat 9/6/25</td>
+                    <td class="finish">Sat 9/6/25</td>
+                    <td class="percent-cell percent-75">0%</td>
+                    <td class="resource">BRO</td>
+                    <td colspan="14" class="timeline-col">
+                        <div class="gantt-container">
+                            <div class="milestone-container" style="left: 93%;">
+                                <div class="milestone milestone-light"></div>
+                                <div class="milestone milestone-dark"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+                <!-- Update Info -->
+                <tr>
+                    <td colspan="21">
+                        <div class="update-info">Update: 30-08-2025</div>
+                        <div class="page-info">Page 1 / 6</div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

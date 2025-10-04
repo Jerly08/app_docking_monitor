@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
+import { idGeneratorService } from '@/lib/idGeneratorService'
 
 const prisma = new PrismaClient()
 
@@ -9,7 +10,8 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = params
+    const resolvedParams = await params
+    const { id } = resolvedParams
     const body = await request.json()
     const { packageLetters, selectedTemplateIds, options = {} } = body
 
@@ -93,11 +95,15 @@ export async function POST(
     const createdWorkItems = []
     const templateToWorkItemMap = new Map() // To track parent-child relationships
 
+    // Generate batch IDs for efficiency
+    const batchIds = await idGeneratorService.generateBatchWorkItemIds(id, templatesToProcess.length)
+    let idIndex = 0
+
     // Process templates in order (parents first, then children)
     for (const template of templatesToProcess) {
       try {
-        // Generate work item ID
-        const workItemId = `WI-${id}-${template.packageLetter}${template.itemNumber || ''}${template.subLetter || ''}-${Date.now()}`
+        // Use pre-generated ID from batch
+        const workItemId = batchIds[idIndex++]
 
         // Determine parent ID for hierarchical structure
         let parentWorkItemId = null
@@ -157,8 +163,7 @@ export async function POST(
         createdWorkItems.push(createdWorkItem)
         templateToWorkItemMap.set(template.id, workItemId)
 
-        // Add small delay to ensure unique timestamps
-        await new Promise(resolve => setTimeout(resolve, 10))
+        // No need for delays with the new ID system
         
       } catch (itemError) {
         console.error(`Error creating work item from template ${template.id}:`, itemError)

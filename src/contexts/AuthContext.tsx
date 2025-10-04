@@ -89,7 +89,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (username: string, password: string): Promise<{success: boolean, error?: string}> => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/login`, {
+      const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4000'
+      console.log('Attempting login to:', `${apiUrl}/api/auth/login`)
+      
+      const response = await fetch(`${apiUrl}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -97,9 +100,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         body: JSON.stringify({ username, password }),
       })
 
-      const data = await response.json()
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error('Login response not ok:', response.status, errorText)
+        
+        try {
+          const errorData = JSON.parse(errorText)
+          return { success: false, error: errorData.message || 'Login failed' }
+        } catch (parseError) {
+          return { success: false, error: `Server error: ${response.status}` }
+        }
+      }
 
-      if (response.ok) {
+      const data = await response.json()
+      
+      if (data.token && data.user) {
         setToken(data.token)
         setUser(data.user)
         
@@ -115,10 +130,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         
         return { success: true }
       } else {
-        return { success: false, error: data.message || 'Login failed' }
+        return { success: false, error: data.message || 'Invalid response from server' }
       }
     } catch (error) {
       console.error('Login error:', error)
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        return { success: false, error: 'Cannot connect to server. Please check if the backend is running.' }
+      }
       return { success: false, error: 'Network error. Please try again.' }
     }
   }

@@ -1,0 +1,42 @@
+{
+  "expectedDataStructure": {
+    "workItems": [
+      {
+        "id": "WI-123",
+        "title": "Setibanya di muara, kapal dipandu masuk perairan dock dibantu 1 (satu) tugboat",
+        "package": "PELAYANAN UMUM",
+        "parentId": null,
+        "children": [
+          {
+            "id": "WI-124",
+            "title": "Diberikan fasilitas kapal pandu setibanya dimuara untuk masuk area Galangan Surya",
+            "description": "SELESAI 100%",
+            "package": "PELAYANAN UMUM",
+            "volume": 1,
+            "unit": "set",
+            "completion": 100,
+            "parentId": "WI-123",
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  "debugChecklist": [
+    "1. ✅ Child item created with parentId",
+    "2. 🔍 Check API response includes children array",
+    "3. 🔍 Check frontend receives children in parent item",
+    "4. 🔍 Check auto-expand functionality works",
+    "5. 🔍 Check renderWorkItem displays children",
+    "6. ✅ Verify hasChildren logic",
+    "7. ✅ Verify isExpanded logic",
+    "8. ✅ Verify children map rendering"
+  ],
+  "troubleshootingSteps": {
+    "step1": "Check browser console for debug logs when loading work items",
+    "step2": "Verify parent item shows expand/collapse button",
+    "step3": "Verify parent item is auto-expanded when children exist",
+    "step4": "Check Network tab in DevTools for API response structure",
+    "step5": "Verify children appear in hierarchical table structure"
+  }
+}

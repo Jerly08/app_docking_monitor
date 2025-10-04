@@ -1,7 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
+import jwt from 'jsonwebtoken'
 
 const prisma = new PrismaClient()
+
+/**
+ * Verify JWT token and extract user information
+ * @param request - NextRequest object
+ * @returns User object or null if invalid
+ */
+async function verifyToken(request: NextRequest) {
+  try {
+    const authorization = request.headers.get('authorization')
+    if (!authorization || !authorization.startsWith('Bearer ')) {
+      return null
+    }
+    
+    const token = authorization.split(' ')[1]
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any
+    
+    // Get user from database to get current role
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId }
+    })
+    
+    return user
+  } catch (error) {
+    console.error('Token verification failed:', error)
+    return null
+  }
+}
 
 // GET /api/projects/[id] - Get specific project details
 export async function GET(
@@ -9,7 +37,8 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = params
+    const resolvedParams = await params
+    const { id } = resolvedParams
 
     const project = await prisma.project.findUnique({
       where: { id },
@@ -107,7 +136,8 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = params
+    const resolvedParams = await params
+    const { id } = resolvedParams
     const body = await request.json()
 
     // Check if project exists
@@ -177,7 +207,35 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const { id } = params
+    const resolvedParams = await params
+    const { id } = resolvedParams
+    const { searchParams } = new URL(request.url)
+    const forceDelete = searchParams.get('force') === 'true'
+
+    // Verify user authentication and authorization
+    const user = await verifyToken(request)
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Unauthorized. Please log in.' },
+        { status: 401 }
+      )
+    }
+
+    // Check if user has permission to delete projects
+    if (user.role !== 'ADMIN' && user.role !== 'MANAGER') {
+      return NextResponse.json(
+        { error: 'Insufficient permissions. Only admins and managers can delete projects.' },
+        { status: 403 }
+      )
+    }
+
+    // For force deletion, only admins are allowed
+    if (forceDelete && user.role !== 'ADMIN') {
+      return NextResponse.json(
+        { error: 'Insufficient permissions. Only administrators can force delete projects.' },
+        { status: 403 }
+      )
+    }
 
     // Check if project exists and get work items count
     const project = await prisma.project.findUnique({
@@ -198,8 +256,8 @@ export async function DELETE(
       )
     }
 
-    // Check if project has work items and is active
-    if (project._count.workItems > 0 && project.status === 'ACTIVE') {
+    // Regular deletion - check if project has work items and is active
+    if (!forceDelete && project._count.workItems > 0 && project.status === 'ACTIVE') {
       return NextResponse.json(
         { 
           error: 'Cannot delete active project with work items',
@@ -208,11 +266,16 @@ export async function DELETE(
             name: project.projectName,
             workItemsCount: project._count.workItems,
             status: project.status
-          }
+          },
+          canForceDelete: user.role === 'ADMIN'
         },
         { status: 409 }
       )
     }
+
+    // Log the deletion action
+    const deleteAction = forceDelete ? 'force deleted' : 'deleted'
+    console.log(`Project ${deleteAction} by ${user.role} user ${user.username}: ${project.projectName} (${project.id})${project._count.workItems > 0 ? ` with ${project._count.workItems} work items` : ''}`)
 
     // Delete project (this will cascade delete work items due to foreign key constraints)
     await prisma.project.delete({
@@ -220,10 +283,12 @@ export async function DELETE(
     })
 
     return NextResponse.json({
-      message: 'Project deleted successfully',
+      message: `Project ${deleteAction} successfully`,
       deletedProject: {
         id: project.id,
-        name: project.projectName
+        name: project.projectName,
+        workItemsCount: project._count.workItems,
+        forceDeleted: forceDelete
       }
     })
   } catch (error) {

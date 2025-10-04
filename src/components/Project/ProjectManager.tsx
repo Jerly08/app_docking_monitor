@@ -41,13 +41,16 @@ import {
   StatNumber,
   StatHelpText,
 } from '@chakra-ui/react'
-import { FiSettings, FiEdit, FiTrash2, FiEye, FiBarChart } from 'react-icons/fi'
+import { FiSettings, FiEdit, FiTrash2, FiEye, FiBarChart, FiAlertTriangle } from 'react-icons/fi'
 import React, { useState, useEffect, useRef } from 'react'
 import { useModalState } from '@/hooks/useModalState'
+import { useAuth } from '@/contexts/AuthContext'
+import { isAdmin, hasProjectPermission } from '@/lib/auth-utils'
 
 interface Project {
   id: string
   name: string
+  projectName?: string // Add support for both naming conventions
   description?: string
   status: string
   createdAt: string
@@ -65,6 +68,8 @@ const ProjectManager: React.FC<ProjectManagerProps> = ({
   currentProjectId,
   onProjectUpdated
 }) => {
+  const { user } = useAuth()
+  
   // Main modal dengan failsafe closing mechanism
   const { isOpen, onOpen, onClose } = useModalState()
   
@@ -80,6 +85,13 @@ const ProjectManager: React.FC<ProjectManagerProps> = ({
     isOpen: isDeleteOpen, 
     onOpen: onDeleteOpen, 
     onClose: onDeleteClose 
+  } = useModalState()
+  
+  // Force delete confirmation untuk admin
+  const { 
+    isOpen: isForceDeleteOpen, 
+    onOpen: onForceDeleteOpen, 
+    onClose: onForceDeleteClose 
   } = useModalState()
 
   const [projects, setProjects] = useState<Project[]>([])
@@ -199,12 +211,13 @@ const ProjectManager: React.FC<ProjectManagerProps> = ({
     }
   }
 
-  const deleteProject = async () => {
+  const deleteProject = async (forceDelete = false) => {
     try {
       if (!projectToDelete) return
 
       const token = localStorage.getItem('auth_token')
-      const response = await fetch(`/api/projects/${projectToDelete.id}`, {
+      const url = `/api/projects/${projectToDelete.id}${forceDelete ? '?force=true' : ''}`
+      const response = await fetch(url, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -213,19 +226,29 @@ const ProjectManager: React.FC<ProjectManagerProps> = ({
       })
 
       if (response.ok) {
+        const result = await response.json()
         toast({
           title: 'Success',
-          description: 'Project deleted successfully',
+          description: result.message || `Project ${forceDelete ? 'force deleted' : 'deleted'} successfully`,
           status: 'success',
-          duration: 3000
+          duration: 4000
         })
         onDeleteClose()
+        onForceDeleteClose()
         setProjectToDelete(null)
         fetchProjects()
         onProjectUpdated()
       } else {
         const error = await response.json()
-        throw new Error(error.message || 'Failed to delete project')
+        
+        // If regular delete fails but user is admin, show force delete option
+        if (response.status === 409 && error.canForceDelete && isAdmin(user)) {
+          onDeleteClose()
+          onForceDeleteOpen()
+          return
+        }
+        
+        throw new Error(error.error || error.message || 'Failed to delete project')
       }
     } catch (error: any) {
       toast({
@@ -376,23 +399,42 @@ const ProjectManager: React.FC<ProjectManagerProps> = ({
                                 aria-label="View Stats"
                                 onClick={() => handleViewStats(project)}
                               />
-                              <IconButton
-                                icon={<FiEdit />}
-                                size="xs"
-                                variant="ghost"
-                                colorScheme="green"
-                                aria-label="Edit"
-                                onClick={() => handleEdit(project)}
-                              />
-                              <IconButton
-                                icon={<FiTrash2 />}
-                                size="xs"
-                                variant="ghost"
-                                colorScheme="red"
-                                aria-label="Delete"
-                                onClick={() => handleDelete(project)}
-                                disabled={project._count?.workItems && project._count.workItems > 0}
-                              />
+                              {hasProjectPermission(user, 'edit') && (
+                                <IconButton
+                                  icon={<FiEdit />}
+                                  size="xs"
+                                  variant="ghost"
+                                  colorScheme="green"
+                                  aria-label="Edit"
+                                  onClick={() => handleEdit(project)}
+                                />
+                              )}
+                              {hasProjectPermission(user, 'delete') && (
+                                <IconButton
+                                  icon={<FiTrash2 />}
+                                  size="xs"
+                                  variant="ghost"
+                                  colorScheme="red"
+                                  aria-label="Delete"
+                                  title={`Delete project${(project._count?.workItems && project._count.workItems > 0 && !isAdmin(user)) ? ' (disabled - has work items)' : ''}`}
+                                  onClick={() => handleDelete(project)}
+                                  disabled={!isAdmin(user) && Boolean(project._count?.workItems && project._count.workItems > 0)}
+                                />
+                              )}
+                              {isAdmin(user) && project._count?.workItems && project._count.workItems > 0 && (
+                                <IconButton
+                                  icon={<FiAlertTriangle />}
+                                  size="xs"
+                                  variant="ghost"
+                                  colorScheme="orange"
+                                  aria-label="Force Delete (Admin)"
+                                  title="Force delete project with work items (Admin only)"
+                                  onClick={() => {
+                                    setProjectToDelete(project)
+                                    onForceDeleteOpen()
+                                  }}
+                                />
+                              )}
                             </HStack>
                           </Td>
                         </Tr>
@@ -492,7 +534,7 @@ const ProjectManager: React.FC<ProjectManagerProps> = ({
             </AlertDialogHeader>
 
             <AlertDialogBody>
-              Are you sure you want to delete the project "{projectToDelete?.name}"?
+              Are you sure you want to delete the project "{projectToDelete?.projectName || projectToDelete?.name}"?
               {projectToDelete?._count?.workItems && projectToDelete._count.workItems > 0 ? (
                 <Alert status="error" mt={4}>
                   <AlertIcon />
@@ -512,11 +554,82 @@ const ProjectManager: React.FC<ProjectManagerProps> = ({
               </Button>
               <Button 
                 colorScheme="red" 
-                onClick={deleteProject} 
+                onClick={() => deleteProject()} 
                 ml={3}
-                disabled={projectToDelete?._count?.workItems && projectToDelete._count.workItems > 0}
+                disabled={Boolean(projectToDelete?._count?.workItems && projectToDelete._count.workItems > 0)}
               >
                 Delete
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
+
+      {/* Force Delete Confirmation Dialog - Admin Only */}
+      <AlertDialog
+        isOpen={isForceDeleteOpen}
+        leastDestructiveRef={cancelRef}
+        onClose={onForceDeleteClose}
+      >
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            <AlertDialogHeader fontSize="lg" fontWeight="bold" color="red.600">
+              ⚠️ Force Delete Project (Admin Action)
+            </AlertDialogHeader>
+
+            <AlertDialogBody>
+              <VStack spacing={4} align="stretch">
+                <Alert status="error">
+                  <AlertIcon />
+                  <Box>
+                    <Text fontWeight="bold">DANGER: Force Delete Action</Text>
+                    <Text fontSize="sm">
+                      This is an irreversible admin action that will permanently delete the project 
+                      and ALL associated data.
+                    </Text>
+                  </Box>
+                </Alert>
+                
+                <Box p={3} bg="red.50" borderRadius="md" border="1px" borderColor="red.200">
+                  <Text fontWeight="bold" color="red.800" mb={2}>Project: {projectToDelete?.projectName || projectToDelete?.name}</Text>
+                  <Text fontSize="sm" color="red.700" mb={1}>
+                    📊 Work Items: <strong>{projectToDelete?._count?.workItems || 0}</strong>
+                  </Text>
+                  <Text fontSize="sm" color="red.700">
+                    ⚡ This action will delete the project and all its work items permanently
+                  </Text>
+                </Box>
+                
+                <Box p={3} bg="yellow.50" borderRadius="md" border="1px" borderColor="yellow.200">
+                  <Text fontWeight="bold" color="yellow.800" mb={2}>⚠️ Admin Responsibility</Text>
+                  <Text fontSize="sm" color="yellow.700">
+                    As an administrator, you have the authority to override normal deletion restrictions. 
+                    Please ensure you have:
+                  </Text>
+                  <Box as="ul" pl={4} mt={2} fontSize="sm" color="yellow.700">
+                    <Box as="li">✅ Confirmed with the project team</Box>
+                    <Box as="li">✅ Backed up any necessary data</Box>
+                    <Box as="li">✅ Understood the business impact</Box>
+                  </Box>
+                </Box>
+                
+                <Text fontSize="sm" fontStyle="italic" color="gray.600">
+                  This action is logged and traceable to your admin account.
+                </Text>
+              </VStack>
+            </AlertDialogBody>
+
+            <AlertDialogFooter>
+              <Button ref={cancelRef} onClick={onForceDeleteClose}>
+                Cancel
+              </Button>
+              <Button 
+                colorScheme="red" 
+                onClick={() => deleteProject(true)} 
+                ml={3}
+                variant="solid"
+              >
+                🗑️ Force Delete Project
               </Button>
             </AlertDialogFooter>
           </AlertDialogContent>

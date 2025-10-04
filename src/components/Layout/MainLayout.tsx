@@ -87,6 +87,7 @@ const modules = [
   { id: 'master-data', name: 'Master Data & Bank Data', icon: FiUsers },
   { id: 'work-plan-report', name: 'Work Plan & Report', icon: FiBarChart },
   { id: 'customer-contacts', name: 'Customer Contacts', icon: FiPhone },
+  { id: 'settings', name: 'Settings', icon: FiSettings },
   // Hidden modules - uncomment when ready to use
   // { id: 'project-management', name: 'Manajemen Proyek & Nota Dinas', icon: FiHome },
   // { id: 'survey-estimation', name: 'Survey & Estimasi', icon: FiSearch },
@@ -169,12 +170,6 @@ export default function MainLayout({ children, currentModule = 'dashboard', brea
           ))}
         </VStack>
 
-        {/* Settings */}
-        <Box position="absolute" bottom="20px" left={0} right={0} px={3}>
-          <NavItem icon={FiSettings}>
-            {isCollapsed ? '' : 'Settings'}
-          </NavItem>
-        </Box>
       </Box>
 
       {/* Main Content */}

@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Management Report - Sketsa</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: #2c5aa0;
+            color: white;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table-header {
+            background: #4a90e2;
+            color: white;
+            font-weight: bold;
+        }
+
+        .table-header th {
+            padding: 12px 8px;
+            text-align: left;
+            border-right: 1px solid #ddd;
+            font-size: 12px;
+        }
+
+        .task-row {
+            border-bottom: 1px solid #eee;
+        }
+
+        .task-row:hover {
+            background-color: #f9f9f9;
+        }
+
+        .task-row td {
+            padding: 8px;
+            border-right: 1px solid #eee;
+            font-size: 11px;
+            vertical-align: middle;
+        }
+
+        .task-id {
+            width: 30px;
+            text-align: center;
+            background: #f8f8f8;
+        }
+
+        .task-name {
+            width: 200px;
+            font-weight: 500;
+        }
+
+        .duration, .start, .finish, .complete {
+            width: 80px;
+            text-align: center;
+        }
+
+        .resource {
+            width: 100px;
+            text-align: center;
+        }
+
+        .gantt-chart {
+            width: 400px;
+            position: relative;
+            height: 30px;
+        }
+
+        .gantt-bar {
+            height: 20px;
+            margin: 5px 0;
+            border-radius: 3px;
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .progress-bar {
+            height: 100%;
+            border-radius: 3px;
+            position: relative;
+        }
+
+        .gal-surya { background: #4CAF50; }
+        .bro { background: #FF9800; }
+        .ks { background: #2196F3; }
+
+        .progress-text {
+            position: absolute;
+            right: 5px;
+            color: white;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .milestone {
+            background: #e74c3c !important;
+            height: 15px;
+        }
+
+        .parent-task {
+            background: #34495e;
+            font-weight: bold;
+        }
+
+        .child-task {
+            padding-left: 20px;
+            font-style: italic;
+        }
+
+        .completion-100 { background: #27ae60; }
+        .completion-75 { background: #3498db; }
+        .completion-50 { background: #f39c12; }
+        .completion-25 { background: #e67e22; }
+        .completion-0 { background: #95a5a6; }
+
+        .timeline-header {
+            background: #ecf0f1;
+            text-align: center;
+            font-size: 10px;
+            padding: 5px;
+            border-right: 1px solid #ddd;
+        }
+
+        .legend {
+            padding: 15px;
+            background: #f8f9fa;
+            border-top: 1px solid #ddd;
+        }
+
+        .legend-item {
+            display: inline-block;
+            margin-right: 20px;
+            font-size: 12px;
+        }
+
+        .legend-color {
+            display: inline-block;
+            width: 15px;
+            height: 15px;
+            margin-right: 5px;
+            vertical-align: middle;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>FRD MT. FERIHAS SEJAHTERA | 2025</h2>
+            <p>Project Management Report</p>
+        </div>
+
+        <table class="report-table">
+            <thead class="table-header">
+                <tr>
+                    <th>ID</th>
+                    <th>Task Name</th>
+                    <th>Duration</th>
+                    <th>Start</th>
+                    <th>Finish</th>
+                    <th>% Complete</th>
+                    <th>Resource Names</th>
+                    <th colspan="4">Timeline (Aug-Sep 2025)</th>
+                </tr>
+                <tr>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th class="timeline-header">Aug 24-31</th>
+                    <th class="timeline-header">Sep 1-7</th>
+                    <th class="timeline-header">Sep 8-14</th>
+                    <th class="timeline-header">Sep 15-21</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="task-row">
+                    <td class="task-id">1</td>
+                    <td class="task-name parent-task">FRD MT. FERIHAS SEJAHTERA | 2025</td>
+                    <td class="duration">16 days</td>
+                    <td class="start">Sat 8/23/25</td>
+                    <td class="finish">Sun 9/7/25</td>
+                    <td class="complete">73%</td>
+                    <td class="resource">-</td>
+                    <td colspan="4" class="gantt-chart">
+                        <div class="gantt-bar parent-task">
+                            <div class="progress-bar" style="width: 73%;"></div>
+                            <span class="progress-text">73%</span>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr class="task-row">
+                    <td class="task-id">2</td>
+                    <td class="task-name child-task">Tata air irigasi</td>
+                    <td class="duration">1 day</td>
+                    <td class="start">Sat 8/23/25</td>
+                    <td class="finish">Sun 8/23/25</td>
+                    <td class="complete">100%</td>
+                    <td class="resource">Gal Surya</td>
+                    <td colspan="4" class="gantt-chart">
+                        <div class="gantt-bar completion-100 gal-surya">
+                            <div class="progress-bar" style="width: 100%;"></div>
+                            <span class="progress-text">100%</span>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr class="task-row">
+                    <td class="task-id">3</td>
+                    <td class="task-name child-task">Naik Dock</td>
+                    <td class="duration">1 day</td>
+                    <td class="start">Sat 8/23/25</td>
+                    <td class="finish">Sun 8/23/25</td>
+                    <td class="complete">100%</td>
+                    <td class="resource">Gal Surya</td>
+                    <td colspan="4" class="gantt-chart">
+                        <div class="gantt-bar completion-100 gal-surya">
+                            <div class="progress-bar" style="width: 100%;"></div>
+                            <span class="progress-text">100%</span>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr class="task-row">
+                    <td class="task-id">4</td>
+                    <td class="task-name child-task">Arrival Meeting</td>
+                    <td class="duration">1 day</td>
+                    <td class="start">Mon 8/25/25</td>
+                    <td class="finish">Mon 8/25/25</td>
+                    <td class="complete">100%</td>
+                    <td class="resource">Gal Surya</td>
+                    <td colspan="4" class="gantt-chart">
+                        <div class="gantt-bar completion-100 gal-surya">
+                            <div class="progress-bar" style="width: 100%;"></div>
+                            <span class="progress-text">100%</span>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr class="task-row">
+                    <td class="task-id">25</td>
+                    <td class="task-name parent-task">UNIT PERAWATAN LAMBUNG & TANKI</td>
+                    <td class="duration">33 days</td>
+                    <td class="start">Sun 8/24/25</td>
+                    <td class="finish">Sun 9/7/25</td>
+                    <td class="complete">73%</td>
+                    <td class="resource">BRO</td>
+                    <td colspan="4" class="gantt-chart">
+                        <div class="gantt-bar completion-75 bro">
+                            <div class="progress-bar" style="width: 95%;"></div>
+                            <span class="progress-text">95%</span>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr class="task-row">
+                    <td class="task-id">26</td>
+                    <td class="task-name child-task">Kapal Basah Ganti Asi (AK)</td>
+                    <td class="duration">14 days</td>
+                    <td class="start">Sun 8/24/25</td>
+                    <td class="finish">Sat 9/6/25</td>
+                    <td class="complete">93%</td>
+                    <td class="resource">BRO</td>
+                    <td colspan="4" class="gantt-chart">
+                        <div class="gantt-bar completion-75 bro">
+                            <div class="progress-bar" style="width: 93%;"></div>
+                            <span class="progress-text">93%</span>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr class="task-row">
+                    <td class="task-id">28</td>
+                    <td class="task-name child-task">Water Jet air tawar 24V</td>
+                    <td class="duration">7 days</td>
+                    <td class="start">Sun 8/24/25</td>
+                    <td class="finish">Sat 8/30/25</td>
+                    <td class="complete">100%</td>
+                    <td class="resource">KS</td>
+                    <td colspan="4" class="gantt-chart">
+                        <div class="gantt-bar completion-100 ks">
+                            <div class="progress-bar" style="width: 100%;"></div>
+                            <span class="progress-text">100%</span>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr class="task-row">
+                    <td class="task-id">29</td>
+                    <td class="task-name child-task">Fullblasting (100%)</td>
+                    <td class="duration">7 days</td>
+                    <td class="start">Mon 8/25/25</td>
+                    <td class="finish">Sun 8/31/25</td>
+                    <td class="complete">100%</td>
+                    <td class="resource">KS</td>
+                    <td colspan="4" class="gantt-chart">
+                        <div class="gantt-bar completion-100 ks">
+                            <div class="progress-bar" style="width: 100%;"></div>
+                            <span class="progress-text">100%</span>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr class="task-row">
+                    <td class="task-id">32</td>
+                    <td class="task-name parent-task">Badan Kapal Atas Garis Air (AGA)</td>
+                    <td class="duration">14 days</td>
+                    <td class="start">Mon 8/25/25</td>
+                    <td class="finish">Sun 9/7/25</td>
+                    <td class="complete">62%</td>
+                    <td class="resource">KS (H)</td>
+                    <td colspan="4" class="gantt-chart">
+                        <div class="gantt-bar completion-50 ks">
+                            <div class="progress-bar" style="width: 90%;"></div>
+                            <span class="progress-text">90%</span>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="legend">
+            <strong>Legend:</strong>
+            <div class="legend-item">
+                <span class="legend-color gal-surya"></span>
+                Gal Surya
+            </div>
+            <div class="legend-item">
+                <span class="legend-color bro"></span>
+                BRO
+            </div>
+            <div class="legend-item">
+                <span class="legend-color ks"></span>
+                KS
+            </div>
+            <div class="legend-item">
+                <span class="legend-color completion-100"></span>
+                100% Complete
+            </div>
+            <div class="legend-item">
+                <span class="legend-color completion-75"></span>
+                75% Complete
+            </div>
+            <div class="legend-item">
+                <span class="legend-color completion-50"></span>
+                50% Complete
+            </div>
+        </div>
+    </div>
+</body>
+</html>
