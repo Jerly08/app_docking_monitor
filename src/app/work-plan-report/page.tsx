@@ -154,6 +154,7 @@ const WorkPlanTable = ({ workItems, onUpdate }: { workItems: WorkItem[], onUpdat
                 onKeyPress={(e) => e.key === 'Enter' && saveEdit()}
                 size="sm"
                 autoFocus
+                suppressHydrationWarning
               />
             ) : (
               <Text
@@ -198,6 +199,7 @@ const WorkPlanTable = ({ workItems, onUpdate }: { workItems: WorkItem[], onUpdat
                 onKeyPress={(e) => e.key === 'Enter' && saveEdit()}
                 size="sm"
                 autoFocus
+                suppressHydrationWarning
               />
             ) : (
               <Text
@@ -221,6 +223,7 @@ const WorkPlanTable = ({ workItems, onUpdate }: { workItems: WorkItem[], onUpdat
                 onKeyPress={(e) => e.key === 'Enter' && saveEdit()}
                 size="sm"
                 autoFocus
+                suppressHydrationWarning
               />
             ) : (
               <Text
@@ -275,6 +278,7 @@ const WorkPlanTable = ({ workItems, onUpdate }: { workItems: WorkItem[], onUpdat
                 onKeyPress={(e) => e.key === 'Enter' && saveEdit()}
                 size="sm"
                 autoFocus
+                suppressHydrationWarning
               />
             ) : (
               <Text
@@ -314,6 +318,7 @@ const WorkPlanTable = ({ workItems, onUpdate }: { workItems: WorkItem[], onUpdat
               placeholder="Notes..."
               rows={1}
               resize="none"
+              suppressHydrationWarning
             />
           </Td>
           <Td>
@@ -590,12 +595,14 @@ export default function WorkPlanReportPage() {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   maxW="300px"
+                  suppressHydrationWarning
                 />
                 <Select
                   placeholder="Filter Package"
                   value={packageFilter}
                   onChange={(e) => setPackageFilter(e.target.value)}
                   maxW="200px"
+                  suppressHydrationWarning
                 >
                   <option value="Pelayanan Umum">Pelayanan Umum</option>
                   <option value="Survey & Estimasi">Survey & Estimasi</option>
@@ -605,24 +612,25 @@ export default function WorkPlanReportPage() {
                   value={resourceFilter}
                   onChange={(e) => setResourceFilter(e.target.value)}
                   maxW="200px"
+                  suppressHydrationWarning
                 >
                   <option value="test">test</option>
                   <option value="Tim Survey">Tim Survey</option>
                 </Select>
-                <Select placeholder="Semua" maxW="150px">
+                <Select placeholder="Semua" maxW="150px" suppressHydrationWarning>
                   <option value="planned">Planned</option>
                   <option value="progress">In Progress</option>
                   <option value="completed">Completed</option>
                 </Select>
                 <HStack>
                   <Text fontSize="sm">Start:</Text>
-                  <Input type="date" size="sm" />
+                  <Input type="date" size="sm" suppressHydrationWarning />
                   <Text fontSize="sm">to</Text>
-                  <Input type="date" size="sm" />
+                  <Input type="date" size="sm" suppressHydrationWarning />
                   <Text fontSize="sm">Finish:</Text>
-                  <Input type="date" size="sm" />
+                  <Input type="date" size="sm" suppressHydrationWarning />
                   <Text fontSize="sm">to</Text>
-                  <Input type="date" size="sm" />
+                  <Input type="date" size="sm" suppressHydrationWarning />
                 </HStack>
               </HStack>
 
