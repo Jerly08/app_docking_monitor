@@ -552,47 +552,47 @@ async function main() {
     console.log('⚠️ Migration skipped - tables may not exist yet');
   }
 
-  // Create sample tasks
+  // Create sample tasks with valid workItemIds
   const sampleTasks = [
     {
       name: 'Setup Area Kerja',
       description: 'Menyiapkan tools dan area kerja untuk proses docking',
-      startDate: new Date('2024-01-01'),
-      endDate: new Date('2024-01-02'),
+      startDate: new Date('2025-08-23'),
+      endDate: new Date('2025-08-24'),
       status: 'COMPLETED',
       priority: 'HIGH',
       assignedTo: 'Tim Persiapan',
       estimatedHours: 16,
       actualHours: 14,
       completion: 100,
-      workItemId: 'PELAYANAN-001',
+      workItemId: 'WI-PRJ001-A1', // Using existing work item ID
       resourceNames: 'Tim Persiapan, Equipment'
     },
     {
-      name: 'Dokumentasi Survey',
-      description: 'Membuat dokumentasi hasil survey dan estimasi',
-      startDate: new Date('2024-01-08'),
-      endDate: new Date('2024-01-09'),
-      status: 'PLANNED',
+      name: 'Dokumentasi Progress',
+      description: 'Membuat dokumentasi progress dry docking',
+      startDate: new Date('2025-09-01'),
+      endDate: new Date('2025-09-02'),
+      status: 'COMPLETED',
       priority: 'MEDIUM',
       assignedTo: 'Documentation Team',
       estimatedHours: 8,
-      completion: 0,
-      workItemId: 'SURVEY-001',
+      actualHours: 6,
+      completion: 100,
+      workItemId: 'WI-PRJ001-A4', // Using existing work item ID
       resourceNames: 'Documentation Team'
     },
     {
-      name: 'Review Progress Mingguan',
-      description: 'Meeting review progress dan koordinasi tim',
-      startDate: new Date('2024-01-07'),
-      endDate: new Date('2024-01-07'),
-      status: 'IN_PROGRESS',
+      name: 'Planning Session',
+      description: 'Meeting planning untuk project MV Ocean Star',
+      startDate: new Date('2025-09-10'),
+      endDate: new Date('2025-09-10'),
+      status: 'PLANNED',
       priority: 'HIGH',
       assignedTo: 'Project Manager',
       estimatedHours: 4,
-      actualHours: 2,
-      completion: 75,
-      workItemId: 'PROJECT-001',
+      completion: 0,
+      workItemId: 'WI-PRJ002-A1', // Using existing work item ID
       resourceNames: 'All Teams'
     }
   ];

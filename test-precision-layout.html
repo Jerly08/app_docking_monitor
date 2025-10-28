@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Precise Layout Test - Vessel Info</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        
+        .test-container {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        .test-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+            padding: 8px;
+            background: #e8f4f8;
+            border-radius: 3px;
+        }
+        
+        /* EXACT PDF STYLES */
+        .pdf-vessel-info {
+            margin-bottom: 15px; 
+            font-size: 9px; 
+            font-family: Arial, sans-serif; 
+            line-height: 1.4;
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+        
+        .reference-format {
+            font-family: monospace;
+            font-size: 10px;
+            background: #f8f8f8;
+            padding: 10px;
+            border: 1px solid #ddd;
+            white-space: pre-line;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎯 Precision Layout Test - Vessel Information</h1>
+    
+    <!-- Reference Format -->
+    <div class="test-container">
+        <div class="test-title">📋 EXPECTED REFERENCE FORMAT</div>
+        <div class="reference-format">Nama Kapal    : MT. FERIMAS SEJAHTERA        Pemilik  : PT. Indoline Incomekita
+Ukuran utama  LOA : 64,02 meter               Tipe     : OIL TANKER
+              LBP : 59,90 meter               GRT      : 762 GT
+              BM  : 10,00 meter               Status   : SPECIAL SURVEY
+              T : 4,50 meter</div>
+    </div>
+    
+    <!-- Updated Precise Layout -->
+    <div class="test-container">
+        <div class="test-title">✅ UPDATED PRECISE LAYOUT</div>
+        <div class="pdf-vessel-info">
+            <div style="display: flex; align-items: baseline; margin-bottom: 1px;">
+                <div style="width: 75px; font-weight: bold;">Nama Kapal</div>
+                <div style="width: 20px; text-align: center;">:</div>
+                <div style="width: 240px;">MT. FERIMAS SEJAHTERA</div>
+                <div style="width: 55px; font-weight: bold; text-align: right;">Pemilik</div>
+                <div style="width: 15px; text-align: center;">:</div>
+                <div style="flex: 1;">PT. Indoline Incomekita</div>
+            </div>
+            <div style="display: flex; align-items: baseline; margin-bottom: 1px;">
+                <div style="width: 75px; font-weight: bold;">Ukuran utama</div>
+                <div style="width: 35px; font-weight: normal; padding-left: 3px;">LOA</div>
+                <div style="width: 15px; text-align: center;">:</div>
+                <div style="width: 190px;">64,02 meter</div>
+                <div style="width: 55px; font-weight: bold; text-align: right;">Tipe</div>
+                <div style="width: 15px; text-align: center;">:</div>
+                <div style="flex: 1;">OIL TANKER</div>
+            </div>
+            <div style="display: flex; align-items: baseline; margin-bottom: 1px;">
+                <div style="width: 75px;"></div>
+                <div style="width: 35px; font-weight: normal; padding-left: 3px;">LBP</div>
+                <div style="width: 15px; text-align: center;">:</div>
+                <div style="width: 190px;">59,90 meter</div>
+                <div style="width: 55px; font-weight: bold; text-align: right;">GRT</div>
+                <div style="width: 15px; text-align: center;">:</div>
+                <div style="flex: 1;">762 GT</div>
+            </div>
+            <div style="display: flex; align-items: baseline; margin-bottom: 1px;">
+                <div style="width: 75px;"></div>
+                <div style="width: 35px; font-weight: normal; padding-left: 3px;">BM</div>
+                <div style="width: 15px; text-align: center;">:</div>
+                <div style="width: 190px;">10,00 meter</div>
+                <div style="width: 55px; font-weight: bold; text-align: right;">Status</div>
+                <div style="width: 15px; text-align: center;">:</div>
+                <div style="flex: 1;">SPECIAL SURVEY</div>
+            </div>
+            <div style="display: flex; align-items: baseline; margin-bottom: 1px;">
+                <div style="width: 75px;"></div>
+                <div style="width: 35px; font-weight: normal; padding-left: 3px;">T</div>
+                <div style="width: 15px; text-align: center;">:</div>
+                <div style="width: 190px;">4,50 meter</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Technical Details -->
+    <div class="test-container">
+        <div class="test-title">🔧 TECHNICAL IMPROVEMENTS</div>
+        <ul style="font-size: 12px; line-height: 1.6;">
+            <li><strong>Column Width Adjustments:</strong>
+                <ul>
+                    <li>Label column: 75px (reduced from 88px for better proportion)</li>
+                    <li>Colon separator: 20px (increased for better spacing)</li>
+                    <li>Value column: 240px on first row, 190px on measurement rows</li>
+                    <li>Right label: 55px (optimized for "Pemilik", "Status")</li>
+                </ul>
+            </li>
+            <li><strong>Spacing & Alignment:</strong>
+                <ul>
+                    <li>Reduced margin between rows to 1px for tighter layout</li>
+                    <li>Used align-items: baseline for proper text alignment</li>
+                    <li>Right-aligned right column labels for better visual flow</li>
+                </ul>
+            </li>
+            <li><strong>Typography:</strong>
+                <ul>
+                    <li>LOA, LBP, BM, T are normal weight (not bold) as per reference</li>
+                    <li>Maintained font-size: 9px throughout</li>
+                    <li>Indonesian decimal formatting (comma instead of period)</li>
+                </ul>
+            </li>
+            <li><strong>Layout Logic:</strong>
+                <ul>
+                    <li>Precise flex layout with fixed widths for consistency</li>
+                    <li>Empty divs maintain spacing structure on continuation lines</li>
+                    <li>Sub-measurements (LOA, LBP, BM, T) properly indented with padding</li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+    
+    <div class="test-container">
+        <div class="test-title">✨ VALIDATION CHECKLIST</div>
+        <ul style="font-size: 12px; line-height: 1.6;">
+            <li>✅ Exact column alignment matching reference layout</li>
+            <li>✅ Proper spacing between left and right sections</li>
+            <li>✅ Indonesian decimal formatting (64,02 not 64.02)</li>
+            <li>✅ Sub-measurements properly indented under "Ukuran utama"</li>
+            <li>✅ Font weights match reference (labels bold, measurements normal)</li>
+            <li>✅ Colon spacing and alignment consistent</li>
+            <li>✅ Right column labels properly right-aligned</li>
+            <li>✅ Line spacing tight and compact as in reference</li>
+        </ul>
+        <p style="font-size: 11px; color: #666; margin-top: 15px;">This layout should now produce a PDF that exactly matches the reference format with precise positioning and spacing.</p>
+    </div>
+</body>
+</html>

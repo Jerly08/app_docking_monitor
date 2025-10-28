@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aligned Right Labels Test - Better Pemilik Alignment</title>
+    <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            font-size: 10px;
+            line-height: 1.2;
+            color: #000;
+            background: white;
+            margin: 8px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+        }
+
+        /* EXACT Header Layout as Reference */
+        .report-header {
+            text-align: center;
+            margin-bottom: 12px;
+            padding: 8px 0;
+        }
+
+        .report-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 3px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .project-subtitle {
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+
+        /* ALIGNED RIGHT LABELS Vessel Info Layout */
+        .vessel-info-section {
+            margin-bottom: 16px;
+            padding: 0;
+            line-height: 1.3;
+            background: #f0f8ff;
+            padding: 15px;
+            border: 2px solid #28a745;
+            border-radius: 5px;
+        }
+
+        .vessel-info-section table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 16px;
+            font-size: 9px;
+            font-family: Arial, sans-serif;
+            table-layout: fixed;
+        }
+
+        .vessel-info-section td {
+            vertical-align: top;
+            line-height: 1.3;
+            font-size: 9px;
+            border: none;
+            white-space: nowrap;
+            overflow: visible;
+            border: 1px dotted #999; /* Visual guide */
+        }
+
+        /* Ensure proper text rendering */
+        .vessel-info-section strong,
+        .vessel-info-section b {
+            font-weight: bold;
+        }
+
+        /* Test styling */
+        .test-info {
+            background: #e9ecef;
+            padding: 10px;
+            margin-bottom: 20px;
+            font-size: 11px;
+            border-left: 4px solid #28a745;
+        }
+
+        .reference-format {
+            background: #f8f9fa;
+            padding: 15px;
+            border: 1px solid #ddd;
+            font-family: monospace;
+            font-size: 9px;
+            white-space: pre;
+            margin: 10px 0;
+            line-height: 1.4;
+        }
+
+        .comparison-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .reference-original {
+            background: #d4edda;
+            padding: 15px;
+            border: 2px solid #155724;
+        }
+
+        .our-implementation {
+            background: #cce5ff;
+            padding: 15px;
+            border: 2px solid #004085;
+        }
+
+        .label {
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            font-size: 12px;
+        }
+
+        .specs-table {
+            width: 100%;
+            margin-top: 10px;
+            font-size: 10px;
+            border-collapse: collapse;
+        }
+
+        .specs-table th,
+        .specs-table td {
+            border: 1px solid #ddd;
+            padding: 5px;
+            text-align: left;
+        }
+
+        .specs-table th {
+            background: #f8f9fa;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- EXACT Header as Reference -->
+        <div class="report-header">
+            <div class="report-title">DOCKING REPORT</div>
+            <div class="project-subtitle">MT. FERIMAS SEJAHTERA / TAHUN 2025</div>
+        </div>
+
+        <div class="test-info">
+            <strong>🎯 ALIGNED RIGHT LABELS TEST</strong><br>
+            Penyesuaian spacing untuk label kanan agar lebih sejajar dengan "Pemilik". Perubahan utama:
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li><strong>BEFORE:</strong> Right labels dengan padding-left: 40px</li>
+                <li><strong>NOW:</strong> Right labels dengan padding-left: 25px (lebih dekat ke kiri)</li>
+                <li>Tipe, GRT, Status sekarang lebih sejajar dengan Pemilik</li>
+                <li>Indonesian decimal format tetap menggunakan koma</li>
+            </ul>
+        </div>
+
+        <!-- COMPARISON SECTION -->
+        <div class="comparison-section">
+            <div class="reference-original">
+                <div class="label">✅ Reference Screenshot Format</div>
+                <div class="reference-format">Nama Kapal    : MT. FERIMAS SEJAHTERA                    Pemilik  : PT. Indoline Incomekita
+Ukuran utama  LOA : 64,02 meter                          Tipe     : OIL TANKER
+              LBP : 59,90 meter                          GRT      : 762 GT
+              BM  : 10,00 meter                          Status   : SPECIAL SURVEY
+              T   : 4,50 meter</div>
+            </div>
+            
+            <div class="our-implementation">
+                <div class="label">🔧 Our Implementation (Better Aligned)</div>
+                <div class="reference-format">Nama Kapal    : MV. OCEAN STAR                    Pemilik : PT. Marine Solutions
+Ukuran utama  LOA : 85,5 meter                          Tipe    : CARGO SHIP
+              LBP : 78,2 meter                          GRT     : 1200 GT
+              BM  : 12,5 meter                          Status  : MAINTENANCE
+              T   : 6,8 meter</div>
+            </div>
+        </div>
+
+        <!-- ADJUSTED ALIGNMENT VESSEL INFORMATION LAYOUT -->
+        <div class="vessel-info-section">
+            <div class="label">🎯 Better Aligned Right Labels Implementation</div>
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 9px; table-layout: fixed;">
+                <!-- Row 1: Nama Kapal & Pemilik -->
+                <tr>
+                    <td style="width: 80px; font-weight: bold; padding: 2px 0; vertical-align: top;">Nama Kapal</td>
+                    <td style="width: 20px; padding: 2px 5px;">:</td>
+                    <td style="width: 200px; padding: 2px 0;">MV. OCEAN STAR</td>
+                    <td style="width: 80px; font-weight: bold; padding: 2px 0; padding-left: 25px;">Pemilik</td>
+                    <td style="width: 20px; padding: 2px 5px;">:</td>
+                    <td style="padding: 2px 0;">PT. Marine Solutions</td>
+                </tr>
+                <!-- Row 2: Ukuran utama LOA & Tipe -->
+                <tr>
+                    <td style="width: 80px; font-weight: bold; padding: 2px 0; vertical-align: top;">Ukuran utama</td>
+                    <td style="width: 25px; font-weight: bold; padding: 2px 0; padding-left: 15px;">LOA</td>
+                    <td style="width: 20px; padding: 2px 5px;">:</td>
+                    <td style="width: 155px; padding: 2px 0;">85,5 meter</td>
+                    <td style="width: 80px; font-weight: bold; padding: 2px 0; padding-left: 25px;">Tipe</td>
+                    <td style="width: 20px; padding: 2px 5px;">:</td>
+                    <td style="padding: 2px 0;">CARGO SHIP</td>
+                </tr>
+                <!-- Row 3: LBP & GRT -->
+                <tr>
+                    <td style="width: 80px;"></td>
+                    <td style="width: 25px; font-weight: bold; padding: 2px 0; padding-left: 15px;">LBP</td>
+                    <td style="width: 20px; padding: 2px 5px;">:</td>
+                    <td style="width: 155px; padding: 2px 0;">78,2 meter</td>
+                    <td style="width: 80px; font-weight: bold; padding: 2px 0; padding-left: 25px;">GRT</td>
+                    <td style="width: 20px; padding: 2px 5px;">:</td>
+                    <td style="padding: 2px 0;">1200 GT</td>
+                </tr>
+                <!-- Row 4: BM & Status -->
+                <tr>
+                    <td style="width: 80px;"></td>
+                    <td style="width: 25px; font-weight: bold; padding: 2px 0; padding-left: 15px;">BM</td>
+                    <td style="width: 20px; padding: 2px 5px;">:</td>
+                    <td style="width: 155px; padding: 2px 0;">12,5 meter</td>
+                    <td style="width: 80px; font-weight: bold; padding: 2px 0; padding-left: 25px;">Status</td>
+                    <td style="width: 20px; padding: 2px 5px;">:</td>
+                    <td style="padding: 2px 0;">MAINTENANCE</td>
+                </tr>
+                <!-- Row 5: T only -->
+                <tr>
+                    <td style="width: 80px;"></td>
+                    <td style="width: 25px; font-weight: bold; padding: 2px 0; padding-left: 15px;">T</td>
+                    <td style="width: 20px; padding: 2px 5px;">:</td>
+                    <td style="width: 155px; padding: 2px 0;">6,8 meter</td>
+                    <td style="width: 80px;"></td>
+                    <td style="width: 20px;"></td>
+                    <td></td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- TECHNICAL SPECIFICATIONS -->
+        <div class="test-info">
+            <strong>🔧 TECHNICAL SPECIFICATIONS (Better Alignment)</strong>
+            <table class="specs-table">
+                <tr>
+                    <th>Element</th>
+                    <th>Width</th>
+                    <th>Padding</th>
+                    <th>Changes</th>
+                </tr>
+                <tr>
+                    <td>Primary Label (Nama Kapal, Ukuran utama)</td>
+                    <td><strong>80px</strong></td>
+                    <td>2px 0</td>
+                    <td>No change</td>
+                </tr>
+                <tr>
+                    <td>Sub Label (LOA, LBP, BM, T)</td>
+                    <td><strong>25px</strong></td>
+                    <td>2px 0, left: 15px</td>
+                    <td>No change</td>
+                </tr>
+                <tr>
+                    <td>Colon (:)</td>
+                    <td><strong>20px</strong></td>
+                    <td>2px 5px</td>
+                    <td>No change</td>
+                </tr>
+                <tr>
+                    <td>Left Values (measurements)</td>
+                    <td><strong>155px/200px</strong></td>
+                    <td>2px 0</td>
+                    <td>No change</td>
+                </tr>
+                <tr>
+                    <td>Right Labels (Pemilik, Tipe, etc)</td>
+                    <td><strong>80px</strong></td>
+                    <td><strong>2px 0, left: 25px</strong></td>
+                    <td><strong>REDUCED from 40px to 25px</strong></td>
+                </tr>
+                <tr>
+                    <td>Right Colon (:)</td>
+                    <td><strong>20px</strong></td>
+                    <td>2px 5px</td>
+                    <td>No change</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- KEY CHANGES -->
+        <div class="test-info" style="background: #fff3cd; border-left-color: #856404;">
+            <strong>🔄 KEY CHANGES - BETTER RIGHT ALIGNMENT</strong>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li>✅ <strong>RIGHT LABELS MOVED LEFT</strong>: padding-left dikurangi dari 40px ke 25px</li>
+                <li>✅ <strong>Better alignment</strong>: Tipe, GRT, Status sekarang lebih sejajar dengan Pemilik</li>
+                <li>✅ <strong>Consistent spacing</strong>: Jarak yang lebih proporsional antara left dan right section</li>
+                <li>✅ <strong>Indonesian decimal format</strong> tetap menggunakan koma</li>
+            </ul>
+        </div>
+
+        <!-- VALIDATION CHECKLIST -->
+        <div class="test-info" style="background: #d4edda; border-left-color: #155724;">
+            <strong>✅ VALIDATION CHECKLIST (Better Aligned)</strong>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li>✅ <strong>Nama Kapal</strong> dan <strong>Pemilik</strong> pada baris yang sama</li>
+                <li>✅ <strong>RIGHT LABELS BETTER ALIGNED</strong>: Tipe, GRT, Status lebih dekat ke Pemilik</li>
+                <li>✅ <strong>Ukuran utama</strong> sebagai header untuk LOA, LBP, BM, T</li>
+                <li>✅ Sub-labels (LOA, LBP, BM, T) dengan indent 15px</li>
+                <li>✅ Right-side labels dengan spacing 25px dari left section (turun dari 40px)</li>
+                <li>✅ Indonesian decimal format dengan koma</li>
+                <li>✅ Consistent padding dan alignment</li>
+                <li>✅ Proper table-layout fixed untuk precise control</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        console.log('🎯 Better Aligned Right Labels Test Loaded');
+        console.log('📊 Testing better alignment for Tipe, GRT, Status with Pemilik');
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const table = document.querySelector('.vessel-info-section table');
+            if (table) {
+                console.log('✅ Better aligned table found');
+                const rows = table.querySelectorAll('tr');
+                console.log(`📊 Table has ${rows.length} rows`);
+                
+                // Validate right column alignment
+                const rightLabels = document.querySelectorAll('td[style*="padding-left: 25px"]');
+                console.log(`🔧 Right labels with 25px padding: ${rightLabels.length}`);
+                
+                rightLabels.forEach((label, index) => {
+                    console.log(`  Right label ${index + 1}: "${label.textContent.trim()}" - 25px padding`);
+                });
+            }
+        });
+
+        // Helper function to show/hide cell borders for debugging
+        function toggleDebugMode() {
+            const cells = document.querySelectorAll('.vessel-info-section td');
+            cells.forEach(cell => {
+                if (cell.style.border === '1px dotted rgb(153, 153, 153)') {
+                    cell.style.border = '1px solid red';
+                } else {
+                    cell.style.border = '1px dotted #999';
+                }
+            });
+            console.log('🔧 Debug mode toggled');
+        }
+
+        window.toggleDebugMode = toggleDebugMode;
+    </script>
+</body>
+</html>

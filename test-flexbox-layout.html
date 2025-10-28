@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flexbox Layout Test - MV. OCEAN STAR</title>
+    <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            font-size: 10px;
+            line-height: 1.2;
+            color: #000;
+            background: white;
+            margin: 8px;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            border: 1px solid #ccc;
+            padding: 20px;
+        }
+
+        /* EXACT Header Layout as Reference */
+        .report-header {
+            text-align: center;
+            margin-bottom: 12px;
+            padding: 8px 0;
+        }
+
+        .report-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 3px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .project-subtitle {
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+
+        /* Test section styling */
+        .test-info {
+            background: #e3f2fd;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2196f3;
+            font-size: 11px;
+        }
+
+        .vessel-info-test {
+            background: #f8f9fa;
+            padding: 15px;
+            border: 2px solid #007bff;
+            margin-bottom: 20px;
+        }
+
+        .label {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #007bff;
+            text-transform: uppercase;
+            font-size: 12px;
+        }
+
+        /* Debug helper */
+        .debug-box {
+            border: 1px dotted #999;
+            padding: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- EXACT Header as Reference -->
+        <div class="report-header">
+            <div class="report-title">DOCKING REPORT</div>
+            <div class="project-subtitle">MV. OCEAN STAR / TAHUN 2025</div>
+        </div>
+
+        <div class="test-info">
+            <strong>🔧 FLEXBOX LAYOUT TEST</strong><br>
+            Testing the new flexbox-based vessel info layout that should match the reference exactly.
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li>✅ Using CSS Flexbox for precise control</li>
+                <li>✅ Fixed widths: 88px, 30px, 15px, 155px, 60px</li>
+                <li>✅ Indonesian decimal format: 85,5 meter</li>
+                <li>✅ Proper spacing and alignment</li>
+            </ul>
+        </div>
+
+        <!-- FLEXBOX LAYOUT TEST -->
+        <div class="vessel-info-test">
+            <div class="label">🎯 New Flexbox Implementation</div>
+            
+            <!-- SIMPLIFIED REFERENCE MATCH Layout -->
+            <div style="margin-bottom: 15px; font-size: 9px; font-family: Arial, sans-serif;">
+                <div style="display: flex; margin-bottom: 2px;">
+                    <div style="width: 88px; font-weight: bold;" class="debug-box">Nama Kapal</div>
+                    <div style="width: 15px;" class="debug-box">:</div>
+                    <div style="width: 200px;" class="debug-box">MV. OCEAN STAR</div>
+                    <div style="width: 60px; font-weight: bold; text-align: right;" class="debug-box">Pemilik</div>
+                    <div style="width: 15px; text-align: center;" class="debug-box">:</div>
+                    <div class="debug-box">PT. Marine Solutions</div>
+                </div>
+                <div style="display: flex; margin-bottom: 2px;">
+                    <div style="width: 88px; font-weight: bold;" class="debug-box">Ukuran utama</div>
+                    <div style="width: 30px; font-weight: bold; padding-left: 12px;" class="debug-box">LOA</div>
+                    <div style="width: 15px;" class="debug-box">:</div>
+                    <div style="width: 155px;" class="debug-box">85,5 meter</div>
+                    <div style="width: 60px; font-weight: bold; text-align: right;" class="debug-box">Tipe</div>
+                    <div style="width: 15px; text-align: center;" class="debug-box">:</div>
+                    <div class="debug-box">CARGO SHIP</div>
+                </div>
+                <div style="display: flex; margin-bottom: 2px;">
+                    <div style="width: 88px;" class="debug-box"></div>
+                    <div style="width: 30px; font-weight: bold; padding-left: 12px;" class="debug-box">LBP</div>
+                    <div style="width: 15px;" class="debug-box">:</div>
+                    <div style="width: 155px;" class="debug-box">78,2 meter</div>
+                    <div style="width: 60px; font-weight: bold; text-align: right;" class="debug-box">GRT</div>
+                    <div style="width: 15px; text-align: center;" class="debug-box">:</div>
+                    <div class="debug-box">1200 GT</div>
+                </div>
+                <div style="display: flex; margin-bottom: 2px;">
+                    <div style="width: 88px;" class="debug-box"></div>
+                    <div style="width: 30px; font-weight: bold; padding-left: 12px;" class="debug-box">BM</div>
+                    <div style="width: 15px;" class="debug-box">:</div>
+                    <div style="width: 155px;" class="debug-box">12,5 meter</div>
+                    <div style="width: 60px; font-weight: bold; text-align: right;" class="debug-box">Status</div>
+                    <div style="width: 15px; text-align: center;" class="debug-box">:</div>
+                    <div class="debug-box">MAINTENANCE</div>
+                </div>
+                <div style="display: flex; margin-bottom: 2px;">
+                    <div style="width: 88px;" class="debug-box"></div>
+                    <div style="width: 45px; font-weight: bold; padding-left: 12px;" class="debug-box">T :</div>
+                    <div style="width: 155px;" class="debug-box">6,8 meter</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CLEAN VERSION WITHOUT DEBUG BORDERS -->
+        <div class="vessel-info-test" style="background: #e8f5e8; border-color: #28a745;">
+            <div class="label" style="color: #28a745;">✅ Clean Version (Production Ready)</div>
+            
+            <div style="margin-bottom: 15px; font-size: 9px; font-family: Arial, sans-serif;">
+                <div style="display: flex; margin-bottom: 2px;">
+                    <div style="width: 88px; font-weight: bold;">Nama Kapal</div>
+                    <div style="width: 15px;">:</div>
+                    <div style="width: 200px;">MV. OCEAN STAR</div>
+                    <div style="width: 60px; font-weight: bold; text-align: right;">Pemilik</div>
+                    <div style="width: 15px; text-align: center;">:</div>
+                    <div>PT. Marine Solutions</div>
+                </div>
+                <div style="display: flex; margin-bottom: 2px;">
+                    <div style="width: 88px; font-weight: bold;">Ukuran utama</div>
+                    <div style="width: 30px; font-weight: bold; padding-left: 12px;">LOA</div>
+                    <div style="width: 15px;">:</div>
+                    <div style="width: 155px;">85,5 meter</div>
+                    <div style="width: 60px; font-weight: bold; text-align: right;">Tipe</div>
+                    <div style="width: 15px; text-align: center;">:</div>
+                    <div>CARGO SHIP</div>
+                </div>
+                <div style="display: flex; margin-bottom: 2px;">
+                    <div style="width: 88px;"></div>
+                    <div style="width: 30px; font-weight: bold; padding-left: 12px;">LBP</div>
+                    <div style="width: 15px;">:</div>
+                    <div style="width: 155px;">78,2 meter</div>
+                    <div style="width: 60px; font-weight: bold; text-align: right;">GRT</div>
+                    <div style="width: 15px; text-align: center;">:</div>
+                    <div>1200 GT</div>
+                </div>
+                <div style="display: flex; margin-bottom: 2px;">
+                    <div style="width: 88px;"></div>
+                    <div style="width: 30px; font-weight: bold; padding-left: 12px;">BM</div>
+                    <div style="width: 15px;">:</div>
+                    <div style="width: 155px;">12,5 meter</div>
+                    <div style="width: 60px; font-weight: bold; text-align: right;">Status</div>
+                    <div style="width: 15px; text-align: center;">:</div>
+                    <div>MAINTENANCE</div>
+                </div>
+                <div style="display: flex; margin-bottom: 2px;">
+                    <div style="width: 88px;"></div>
+                    <div style="width: 45px; font-weight: bold; padding-left: 12px;">T :</div>
+                    <div style="width: 155px;">6,8 meter</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- EXPECTED FORMAT -->
+        <div class="test-info">
+            <strong>🎯 EXPECTED FORMAT (Reference)</strong>
+            <pre style="font-family: monospace; font-size: 9px; background: #f8f9fa; padding: 10px; margin: 10px 0; border: 1px solid #ddd;">
+Nama Kapal    : MV. OCEAN STAR                           Pemilik  : PT. Marine Solutions
+Ukuran utama  LOA : 85,5 meter                           Tipe     : CARGO SHIP
+              LBP : 78,2 meter                           GRT      : 1200 GT
+              BM  : 12,5 meter                           Status   : MAINTENANCE
+              T : 6,8 meter
+            </pre>
+        </div>
+
+        <!-- TECHNICAL DETAILS -->
+        <div class="test-info" style="background: #fff3cd; border-left-color: #856404;">
+            <strong>🔧 TECHNICAL IMPLEMENTATION</strong>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li><strong>Layout Method:</strong> CSS Flexbox (display: flex)</li>
+                <li><strong>Column Widths:</strong> 88px + 30px + 15px + 155px + 60px + 15px + auto</li>
+                <li><strong>Decimal Format:</strong> Indonesian format with comma (85,5 meter)</li>
+                <li><strong>Font:</strong> Arial, 9px</li>
+                <li><strong>Spacing:</strong> margin-bottom: 2px between rows</li>
+                <li><strong>Alignment:</strong> text-align: right for right-side labels</li>
+            </ul>
+        </div>
+
+        <!-- DEBUGGING CONTROLS -->
+        <div class="test-info" style="background: #f0f0f0; border-left-color: #666;">
+            <strong>🔧 DEBUGGING CONTROLS</strong><br>
+            <button onclick="toggleDebugBorders()" style="margin: 10px 5px 5px 0; padding: 5px 10px;">Toggle Debug Borders</button>
+            <button onclick="measureElements()" style="margin: 10px 5px 5px 0; padding: 5px 10px;">Measure Elements</button>
+        </div>
+    </div>
+
+    <script>
+        console.log('🧪 Flexbox Layout Test Loaded');
+        
+        function toggleDebugBorders() {
+            const debugBoxes = document.querySelectorAll('.debug-box');
+            debugBoxes.forEach(box => {
+                if (box.style.border === '1px solid red') {
+                    box.style.border = '1px dotted #999';
+                } else {
+                    box.style.border = '1px solid red';
+                }
+            });
+            console.log('🔧 Debug borders toggled');
+        }
+
+        function measureElements() {
+            const firstRow = document.querySelector('div[style*="display: flex"]');
+            if (firstRow) {
+                const children = firstRow.children;
+                console.log('📏 Element measurements:');
+                Array.from(children).forEach((child, index) => {
+                    const rect = child.getBoundingClientRect();
+                    console.log(`  Element ${index + 1}: ${rect.width.toFixed(1)}px - "${child.textContent}"`);
+                });
+            }
+        }
+
+        // Auto-measure on load
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(measureElements, 100);
+        });
+    </script>
+</body>
+</html>

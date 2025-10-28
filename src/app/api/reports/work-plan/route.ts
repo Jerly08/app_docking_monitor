@@ -17,14 +17,27 @@ export async function POST(request: NextRequest) {
     if (projectId || generateForProject) {
       const targetProjectId = projectId || generateForProject
       
-      // Fetch project with vessel specifications
+      // Fetch project with vessel specifications including attachments
       project = await prisma.project.findUnique({
         where: { id: targetProjectId },
         include: {
           workItems: {
             include: {
-              children: true,
+              children: {
+                include: {
+                  attachments: {
+                    orderBy: {
+                      uploadedAt: 'desc'
+                    }
+                  }
+                }
+              },
               parent: true,
+              attachments: {
+                orderBy: {
+                  uploadedAt: 'desc'
+                }
+              },
               template: {
                 select: {
                   packageLetter: true,
@@ -85,6 +98,45 @@ export async function POST(request: NextRequest) {
       : 0
     const milestones = workItems.filter((item: any) => item.isMilestone).length
     const conflictedTasks = workItems.filter((item: any) => item.completion < 50 || item.status === 'BLOCKED').length
+
+    // Collect all attachments from work items and their children
+    const allAttachments: any[] = []
+    try {
+      workItems.forEach((item: any) => {
+        // Add parent item attachments
+        if (item.attachments && Array.isArray(item.attachments)) {
+          item.attachments.forEach((attachment: any) => {
+            allAttachments.push({
+              ...attachment,
+              workItemId: item.id,
+              workItemTitle: item.title,
+              isChild: false
+            })
+          })
+        }
+        
+        // Add child item attachments
+        if (item.children && Array.isArray(item.children)) {
+          item.children.forEach((child: any) => {
+            if (child.attachments && Array.isArray(child.attachments)) {
+              child.attachments.forEach((attachment: any) => {
+                allAttachments.push({
+                  ...attachment,
+                  workItemId: child.id,
+                  workItemTitle: child.title,
+                  parentTitle: item.title,
+                  isChild: true
+                })
+              })
+            }
+          })
+        }
+      })
+      console.log(`✅ Collected ${allAttachments.length} attachments from ${workItems.length} work items`)
+    } catch (attachmentError) {
+      console.warn('⚠️ Error collecting attachments, proceeding without attachments:', attachmentError)
+      // Continue without attachments - this ensures PDF generation doesn't fail
+    }
 
     // Process hierarchical work items untuk report format
     const processWorkItemsForReport = (items: any[]) => {
@@ -232,7 +284,10 @@ export async function POST(request: NextRequest) {
         vessel: project.vesselName,
         customer: project.customerCompany,
         status: project.status
-      } : null
+      } : null,
+      
+      // Attachments for Lampiran section
+      attachments: allAttachments
     }
 
     // Use exact replica PDF service that matches 100% with reference image
@@ -265,8 +320,20 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Error generating work plan report:', error)
+    
+    // Expose detailed error for debugging
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    const errorStack = error instanceof Error ? error.stack : ''
+    
+    console.error('Detailed error message:', errorMessage)
+    console.error('Error stack:', errorStack)
+    
     return NextResponse.json(
-      { error: 'Failed to generate work plan report' },
+      { 
+        error: 'Failed to generate work plan report',
+        details: errorMessage,
+        timestamp: new Date().toISOString()
+      },
       { status: 500 }
     )
   }

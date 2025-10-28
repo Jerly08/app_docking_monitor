@@ -39,7 +39,12 @@ export async function GET(request: NextRequest) {
               children: true
             }
           },
-          template: includeTemplate
+          template: includeTemplate,
+          attachments: {
+            orderBy: {
+              uploadedAt: 'desc'
+            }
+          }
         }
       },
       parent: {
@@ -61,6 +66,11 @@ export async function GET(request: NextRequest) {
           id: true,
           projectName: true,
           vesselName: true
+        }
+      },
+      attachments: {
+        orderBy: {
+          uploadedAt: 'desc'
         }
       }
     }
@@ -145,8 +155,14 @@ export async function GET(request: NextRequest) {
 
 // POST /api/work-items - Create new work item with project association
 export async function POST(request: NextRequest) {
+  const requestStartTime = Date.now()
+  console.log(`🚀 POST /api/work-items - Request started at ${new Date().toISOString()}`)
+  
   try {
+    console.log('📦 Parsing request body...')
     const body = await request.json()
+    console.log('✅ Request body parsed successfully')
+    console.log('📋 Request data:', JSON.stringify(body, null, 2))
     
     // Validate required fields
     if (!body.title) {
@@ -224,7 +240,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate new ID using the new Work Package format if not provided
+    console.log('🔢 Generating work item ID...')
+    const idGenStartTime = Date.now()
     const workItemId = body.id || await idGeneratorService.generateWorkItemIdNew(body.projectId || 'default', body.parentId)
+    const idGenDuration = Date.now() - idGenStartTime
+    console.log(`✅ Work item ID generated: ${workItemId} (took ${idGenDuration}ms)`)
+    
+    console.log('💾 Creating work item in database...')
+    const dbCreateStartTime = Date.now()
     
     const workItem = await prisma.workItem.create({
       data: {
@@ -286,16 +309,51 @@ export async function POST(request: NextRequest) {
         }
       }
     })
+    
+    const dbCreateDuration = Date.now() - dbCreateStartTime
+    console.log(`✅ Work item created in database (took ${dbCreateDuration}ms)`)
+    
+    const totalDuration = Date.now() - requestStartTime
+    console.log(`🏁 Request completed successfully in ${totalDuration}ms total`)
 
     return NextResponse.json({
       message: 'Work item created successfully',
       workItem
     }, { status: 201 })
   } catch (error) {
-    console.error('Error creating work item:', error)
+    const totalDuration = Date.now() - requestStartTime
+    console.error(`💥 Error creating work item after ${totalDuration}ms:`, error)
+    console.error('Error type:', error?.constructor?.name)
+    console.error('Error message:', error?.message)
+    console.error('Error stack:', error?.stack)
+    
+    if (error?.code) {
+      console.error('Error code:', error.code)
+    }
+    
+    // More specific error message based on error type
+    let errorMessage = 'Failed to create work item'
+    let statusCode = 500
+    
+    if (error?.message?.includes('timeout')) {
+      errorMessage = 'Request timed out while creating work item'
+      statusCode = 504
+    } else if (error?.code === 'P2002') {
+      errorMessage = 'Work item with this ID already exists'
+      statusCode = 409
+    } else if (error?.code?.startsWith('P')) {
+      errorMessage = `Database error: ${error.message}`
+      statusCode = 500
+    }
+    
     return NextResponse.json(
-      { error: 'Failed to create work item' },
-      { status: 500 }
+      { 
+        error: errorMessage,
+        details: error?.message,
+        errorType: error?.constructor?.name,
+        duration: totalDuration
+      },
+      { status: statusCode }
     )
   }
 }

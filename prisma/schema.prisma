@@ -80,6 +80,22 @@ model WorkItemTemplate {
   @@map("work_item_templates")
 }
 
+// WorkItem Attachment Model for Multiple Images
+model WorkItemAttachment {
+  id          String   @id @default(cuid())
+  fileName    String   // Original filename
+  fileUrl     String   // Path/URL to the uploaded file
+  fileSize    Int?     // File size in bytes
+  mimeType    String?  // MIME type (image/jpeg, image/png, etc.)
+  uploadedAt  DateTime @default(now())
+  
+  // Relations
+  workItemId  String
+  workItem    WorkItem @relation(fields: [workItemId], references: [id], onDelete: Cascade)
+  
+  @@map("work_item_attachments")
+}
+
 // Hierarchical WorkItem Model for Task Management
 model WorkItem {
   id              String     @id
@@ -91,7 +107,7 @@ model WorkItem {
   unit            String?
   status          String?
   completion      Int        @default(0)
-  imageUrl        String?
+  imageUrl        String?    // Keep for backward compatibility
   
   // Hierarchical structure
   parentId        String?
@@ -117,6 +133,7 @@ model WorkItem {
   
   // Relations
   tasks           Task[]
+  attachments     WorkItemAttachment[]
   
   // Timestamps
   createdAt       DateTime   @default(now())

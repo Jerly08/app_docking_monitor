@@ -40,6 +40,19 @@ interface VesselInfo {
   status: string;
 }
 
+interface WorkItemAttachment {
+  id: string;
+  fileName: string;
+  fileUrl: string;
+  fileSize?: number;
+  mimeType?: string;
+  uploadedAt: string;
+  workItemId: string;
+  workItemTitle: string;
+  parentTitle?: string;
+  isChild: boolean;
+}
+
 interface ReportData {
   projectName: string;
   reportTitle: string;
@@ -50,28 +63,46 @@ interface ReportData {
   avgCompletion: number;
   milestones: number;
   conflictedTasks: number;
+  attachments?: WorkItemAttachment[];
 }
 
 export class ExactReplicaPdfService {
   async generateProjectReportPDF(data: ReportData): Promise<Buffer> {
+    let browser = null;
     try {
+      console.log('🚀 Starting PDF generation with Puppeteer...');
+      
       // Generate HTML content that matches reference exactly
       const htmlContent = this.generateExactHTMLTemplate(data);
+      console.log('✅ HTML template generated, length:', htmlContent.length);
       
-      // Launch puppeteer
-      const browser = await puppeteer.launch({
+      // Launch puppeteer with improved configuration for Windows
+      console.log('🌐 Launching browser...');
+      browser = await puppeteer.launch({
         headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
+        args: [
+          '--no-sandbox', 
+          '--disable-setuid-sandbox',
+          '--disable-dev-shm-usage',
+          '--disable-accelerated-2d-canvas',
+          '--disable-gpu'
+        ],
+        timeout: 60000
       });
+      console.log('✅ Browser launched successfully');
 
       const page = await browser.newPage();
+      console.log('✅ New page created');
       
       // Set content and wait for load
       await page.setContent(htmlContent, { 
-        waitUntil: 'networkidle0'
+        waitUntil: 'networkidle0',
+        timeout: 30000
       });
+      console.log('✅ Page content set');
 
       // Generate PDF with exact settings to match reference
+      console.log('📄 Generating PDF...');
       const pdfBuffer = await page.pdf({
         format: 'A4',
         printBackground: true,
@@ -81,15 +112,35 @@ export class ExactReplicaPdfService {
           bottom: '8mm',
           left: '8mm'
         },
-        displayHeaderFooter: false
+        displayHeaderFooter: false,
+        timeout: 60000
       });
+      console.log('✅ PDF generated, size:', pdfBuffer.length, 'bytes');
 
       await browser.close();
+      console.log('✅ Browser closed successfully');
+      
       return Buffer.from(pdfBuffer);
 
     } catch (error) {
-      console.error('Error generating exact replica PDF:', error);
-      throw new Error(`Failed to generate PDF: ${error.message}`);
+      console.error('❌ Error generating exact replica PDF:', error);
+      console.error('Error name:', error instanceof Error ? error.name : 'Unknown');
+      console.error('Error message:', error instanceof Error ? error.message : 'Unknown');
+      console.error('Error stack:', error instanceof Error ? error.stack : 'Unknown');
+      
+      // Ensure browser is closed on error
+      if (browser) {
+        try {
+          await browser.close();
+          console.log('✅ Browser closed after error');
+        } catch (closeError) {
+          console.error('❌ Failed to close browser:', closeError);
+        }
+      }
+      
+      // Re-throw with detailed error
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      throw new Error(`Failed to generate PDF: ${errorMessage}`);
     }
   }
 
@@ -145,90 +196,35 @@ export class ExactReplicaPdfService {
                 margin-bottom: 12px;
             }
 
-            /* EXACT Vessel Info Layout - Precisely Match Reference */
+            /* ULTRA PRECISE Vessel Info Layout */
             .vessel-info-section {
-                margin-bottom: 15px;
-                font-size: 10px;
+                margin-bottom: 16px;
+                padding: 0;
+                line-height: 1.3;
             }
 
-            .vessel-info-table {
+            .vessel-info-section table {
                 width: 100%;
                 border-collapse: collapse;
-                margin-bottom: 15px;
-                font-size: 10px;
+                margin-bottom: 16px;
+                font-size: 9px;
+                font-family: Arial, sans-serif;
                 table-layout: fixed;
             }
 
-            .vessel-info-table td {
-                padding: 1px 0;
+            .vessel-info-section td {
                 vertical-align: top;
-                line-height: 1.4;
-                font-size: 10px;
+                line-height: 1.3;
+                font-size: 9px;
+                border: none;
+                white-space: nowrap;
+                overflow: visible;
             }
 
-            /* Left Column - Nama Kapal */
-            .vessel-info-label {
+            /* Ensure proper text rendering */
+            .vessel-info-section strong,
+            .vessel-info-section b {
                 font-weight: bold;
-                width: 90px;
-                text-align: left;
-                vertical-align: top;
-                padding-right: 8px;
-            }
-
-            .vessel-info-colon {
-                width: 8px;
-                text-align: left;
-                vertical-align: top;
-            }
-
-            .vessel-info-value {
-                width: 180px;
-                text-align: left;
-                vertical-align: top;
-                padding-right: 20px;
-            }
-
-            /* Spacer between columns */
-            .vessel-info-spacer {
-                width: 30px;
-            }
-
-            /* Sub-labels for Ukuran utama */
-            .vessel-info-sub-label {
-                font-weight: bold;
-                width: 30px;
-                text-align: left;
-                vertical-align: top;
-                padding-left: 15px;
-            }
-
-            /* Right Column - Pemilik, Tipe, etc */
-            .vessel-info-right-label {
-                font-weight: bold;
-                width: 70px;
-                text-align: left;
-                vertical-align: top;
-            }
-
-            .vessel-info-right-colon {
-                width: 8px;
-                text-align: left;
-                vertical-align: top;
-            }
-
-            .vessel-info-right-value {
-                width: 150px;
-                text-align: left;
-                vertical-align: top;
-            }
-
-            /* Special styling for Ukuran utama row */
-            .vessel-info-ukuran-label {
-                font-weight: bold;
-                width: 75px;
-                text-align: left;
-                vertical-align: top;
-                padding-right: 8px;
             }
 
             /* EXACT Table Structure - Perfect Match to Reference */
@@ -406,61 +402,55 @@ export class ExactReplicaPdfService {
     </head>
     <body>
         <div class="container">
-            <!-- EXACT Header as Reference -->
-            <div class="report-header">
-                <div class="report-title">DOCKING REPORT</div>
-                <div class="project-subtitle">${data.vesselInfo.name} / TAHUN ${new Date().getFullYear()}</div>
+            <!-- CENTERED HEADER TEXT -->
+            <div style="text-align: center; margin-bottom: 20px; padding: 0;">
+                <div style="font-size: 14px; font-weight: bold; margin-bottom: 2px; letter-spacing: 0.5px; text-align: center;">DOCKING REPORT</div>
+                <div style="font-size: 12px; font-weight: bold; margin-bottom: 15px; text-align: center;">${data.vesselInfo.name} / TAHUN ${new Date().getFullYear()}</div>
             </div>
 
-            <!-- EXACT Vessel Information Layout - Precisely Match Reference -->
-            <div class="vessel-info-section">
-                <table class="vessel-info-table">
-                    <tr>
-                        <td class="vessel-info-label"><strong>Nama Kapal</strong></td>
-                        <td class="vessel-info-colon">:</td>
-                        <td class="vessel-info-value">${data.vesselInfo.name}</td>
-                        <td class="vessel-info-spacer"></td>
-                        <td class="vessel-info-right-label"><strong>Pemilik</strong></td>
-                        <td class="vessel-info-right-colon">:</td>
-                        <td class="vessel-info-right-value">${data.vesselInfo.owner}</td>
-                    </tr>
-                    <tr>
-                        <td class="vessel-info-ukuran-label"><strong>Ukuran utama</strong></td>
-                        <td class="vessel-info-sub-label"><strong>LOA</strong></td>
-                        <td class="vessel-info-colon">:</td>
-                        <td class="vessel-info-value">${data.vesselInfo.loa}</td>
-                        <td class="vessel-info-right-label"><strong>Tipe</strong></td>
-                        <td class="vessel-info-right-colon">:</td>
-                        <td class="vessel-info-right-value">${data.vesselInfo.vessel_type || 'OIL TANKER'}</td>
-                    </tr>
-                    <tr>
-                        <td class="vessel-info-label"></td>
-                        <td class="vessel-info-sub-label"><strong>LBP</strong></td>
-                        <td class="vessel-info-colon">:</td>
-                        <td class="vessel-info-value">${data.vesselInfo.lpp}</td>
-                        <td class="vessel-info-right-label"><strong>GRT</strong></td>
-                        <td class="vessel-info-right-colon">:</td>
-                        <td class="vessel-info-right-value">${data.vesselInfo.dwt_gt}</td>
-                    </tr>
-                    <tr>
-                        <td class="vessel-info-label"></td>
-                        <td class="vessel-info-sub-label"><strong>BM</strong></td>
-                        <td class="vessel-info-colon">:</td>
-                        <td class="vessel-info-value">${data.vesselInfo.breadth}</td>
-                        <td class="vessel-info-right-label"><strong>Status</strong></td>
-                        <td class="vessel-info-right-colon">:</td>
-                        <td class="vessel-info-right-value">${data.vesselInfo.status}</td>
-                    </tr>
-                    <tr>
-                        <td class="vessel-info-label"></td>
-                        <td class="vessel-info-sub-label"><strong>T</strong></td>
-                        <td class="vessel-info-colon">:</td>
-                        <td class="vessel-info-value">${data.vesselInfo.depth}</td>
-                        <td class="vessel-info-right-label"></td>
-                        <td class="vessel-info-right-colon"></td>
-                        <td class="vessel-info-right-value"></td>
-                    </tr>
-                </table>
+            <!-- EXACTLY ALIGNED VESSEL INFORMATION -->
+            <div style="margin-bottom: 15px; font-size: 9px; font-family: Arial, sans-serif; line-height: 1.3;">
+                <div style="display: flex; align-items: baseline; margin-bottom: 1px;">
+                    <div style="width: 85px; font-weight: bold;">Nama Kapal</div>
+                    <div style="width: 20px; text-align: center;">:</div>
+                    <div style="width: 225px;">${data.vesselInfo.name}</div>
+                    <div style="width: 65px; font-weight: bold; text-align: left; padding-left: 25px;">Pemilik</div>
+                    <div style="width: 20px; text-align: center;">:</div>
+                    <div style="flex: 1;">${data.vesselInfo.owner}</div>
+                </div>
+                <div style="display: flex; align-items: baseline; margin-bottom: 1px;">
+                    <div style="width: 85px; font-weight: bold;">Ukuran utama</div>
+                    <div style="width: 35px; text-align: left; padding-left: 5px;">LOA</div>
+                    <div style="width: 20px; text-align: center;">:</div>
+                    <div style="width: 205px;">${this.formatIndonesianDecimal(data.vesselInfo.loa)}</div>
+                    <div style="width: 65px; font-weight: bold; text-align: left; padding-left: 25px;">Tipe</div>
+                    <div style="width: 20px; text-align: center;">:</div>
+                    <div style="flex: 1;">${data.vesselInfo.vessel_type || 'CARGO SHIP'}</div>
+                </div>
+                <div style="display: flex; align-items: baseline; margin-bottom: 1px;">
+                    <div style="width: 85px;"></div>
+                    <div style="width: 35px; text-align: left; padding-left: 5px;">LBP</div>
+                    <div style="width: 20px; text-align: center;">:</div>
+                    <div style="width: 205px;">${this.formatIndonesianDecimal(data.vesselInfo.lpp)}</div>
+                    <div style="width: 65px; font-weight: bold; text-align: left; padding-left: 25px;">GRT</div>
+                    <div style="width: 20px; text-align: center;">:</div>
+                    <div style="flex: 1;">${data.vesselInfo.dwt_gt}</div>
+                </div>
+                <div style="display: flex; align-items: baseline; margin-bottom: 1px;">
+                    <div style="width: 85px;"></div>
+                    <div style="width: 35px; text-align: left; padding-left: 5px;">BM</div>
+                    <div style="width: 20px; text-align: center;">:</div>
+                    <div style="width: 205px;">${this.formatIndonesianDecimal(data.vesselInfo.breadth)}</div>
+                    <div style="width: 65px; font-weight: bold; text-align: left; padding-left: 25px;">Status</div>
+                    <div style="width: 20px; text-align: center;">:</div>
+                    <div style="flex: 1;">${data.vesselInfo.status}</div>
+                </div>
+                <div style="display: flex; align-items: baseline; margin-bottom: 1px;">
+                    <div style="width: 85px;"></div>
+                    <div style="width: 35px; text-align: left; padding-left: 5px;">T</div>
+                    <div style="width: 20px; text-align: center;">:</div>
+                    <div style="width: 205px;">${this.formatIndonesianDecimal(data.vesselInfo.depth)}</div>
+                </div>
             </div>
 
             <!-- EXACT Main Table -->
@@ -476,7 +466,7 @@ export class ExactReplicaPdfService {
                     </tr>
                 </thead>
                 <tbody>
-                    ${this.generateExactTableRows(data.packageGroups)}
+                    ${this.generateExactTableRows(data.packageGroups, data.attachments)}
                 </tbody>
             </table>
         </div>
@@ -485,7 +475,7 @@ export class ExactReplicaPdfService {
     `;
   }
 
-  private generateExactTableRows(packageGroups: PackageGroup[]): string {
+  private generateExactTableRows(packageGroups: PackageGroup[], attachments?: WorkItemAttachment[]): string {
     let rowsHtml = '';
     
     packageGroups.forEach((packageGroup) => {
@@ -507,6 +497,9 @@ export class ExactReplicaPdfService {
         const itemNumber = this.generateItemNumber(packageGroup.packageLetter, itemIndex);
         const statusClass = this.getStatusClass(item.completion);
         const statusText = this.getStatusText(item.completion);
+        
+        // Find attachments for this work item
+        const itemAttachments = attachments?.filter(att => att.workItemId === item.id && !att.isChild) || [];
 
         // Parent Item Row
         rowsHtml += `
@@ -519,7 +512,7 @@ export class ExactReplicaPdfService {
               ${statusText ? `<span class="${statusClass}">${statusText}</span>` : ''}
             </td>
             <td class="col-lampiran image-cell">
-              ${this.generateImagePlaceholder(item)}
+              ${this.generateImageGrid(itemAttachments)}
             </td>
           </tr>
         `;
@@ -529,6 +522,9 @@ export class ExactReplicaPdfService {
           item.children.forEach((child) => {
             const childStatusClass = this.getStatusClass(child.completion);
             const childStatusText = this.getStatusText(child.completion);
+            
+            // Find attachments for this child work item
+            const childAttachments = attachments?.filter(att => att.workItemId === child.id && att.isChild) || [];
 
             rowsHtml += `
               <tr class="realization-row">
@@ -544,7 +540,7 @@ export class ExactReplicaPdfService {
                   ${childStatusText ? `<span class="${childStatusClass}">${childStatusText}</span>` : ''}
                 </td>
                 <td class="col-lampiran image-cell">
-                  ${this.generateImagePlaceholder(child)}
+                  ${this.generateImageGrid(childAttachments)}
                 </td>
               </tr>
             `;
@@ -554,6 +550,37 @@ export class ExactReplicaPdfService {
     });
 
     return rowsHtml;
+  }
+
+  private generateImageGrid(attachments: WorkItemAttachment[]): string {
+    if (!attachments || attachments.length === 0) {
+      return `<div class="image-placeholder">📷</div>`;
+    }
+
+    // Display up to 4 images in a grid
+    const displayAttachments = attachments.slice(0, 4);
+    const remainingCount = Math.max(0, attachments.length - 4);
+    
+    let imageHtml = '';
+    
+    if (displayAttachments.length === 1) {
+      // Single image - display larger
+      imageHtml = `<img src="${displayAttachments[0].fileUrl}" class="work-image" alt="${displayAttachments[0].fileName}" style="max-width: 80px; max-height: 60px;" />`;
+    } else {
+      // Multiple images - display in grid
+      imageHtml = '<div style="display: flex; flex-wrap: wrap; gap: 2px; justify-content: center;">';
+      displayAttachments.forEach(attachment => {
+        imageHtml += `<img src="${attachment.fileUrl}" class="work-image" alt="${attachment.fileName}" style="max-width: 35px; max-height: 30px;" />`;
+      });
+      imageHtml += '</div>';
+      
+      // Add count indicator if there are more images
+      if (remainingCount > 0) {
+        imageHtml += `<div style="font-size: 7px; color: #666; text-align: center; margin-top: 2px;">+${remainingCount} more</div>`;
+      }
+    }
+    
+    return imageHtml;
   }
 
   private generateImagePlaceholder(item: WorkItem): string {
@@ -580,6 +607,13 @@ export class ExactReplicaPdfService {
     // All packages now use numbers: 1, 2, 3, 4, 5, ...
     // Changed from letters (A, B, C) to numbers (1, 2, 3) as per requirement
     return (index + 1).toString();
+  }
+
+  private formatIndonesianDecimal(value: string): string {
+    if (!value) return '';
+    // Convert decimal point to comma for Indonesian format
+    // Handle various formats: "85.5 meter", "85.50 meter", etc.
+    return value.replace(/\./, ',');
   }
 
   private escapeHtml(unsafe: string): string {

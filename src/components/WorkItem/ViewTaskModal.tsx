@@ -21,6 +21,7 @@ import {
   Flex,
 } from '@chakra-ui/react'
 import { FiCalendar, FiClock, FiUsers, FiPackage, FiFlag, FiPercent } from 'react-icons/fi'
+import ImageUpload from './ImageUpload'
 
 interface WorkItem {
   id: string
@@ -229,6 +230,14 @@ export default function ViewTaskModal({ isOpen, onClose, workItem }: ViewTaskMod
                 </VStack>
               </>
             )}
+
+            {/* Image Attachments */}
+            <Divider />
+            <ImageUpload 
+              workItemId={workItem.id}
+              workItemTitle={workItem.title}
+              maxFiles={10}
+            />
 
             {/* Timestamps */}
             <Box pt={2} borderTop="1px solid" borderColor="gray.200">

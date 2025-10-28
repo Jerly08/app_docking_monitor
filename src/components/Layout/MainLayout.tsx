@@ -84,7 +84,6 @@ interface MainLayoutProps {
 
 const modules = [
   { id: 'dashboard', name: 'Dashboard', icon: FiHome },
-  { id: 'master-data', name: 'Master Data & Bank Data', icon: FiUsers },
   { id: 'work-plan-report', name: 'Work Plan & Report', icon: FiBarChart },
   { id: 'customer-contacts', name: 'Customer Contacts', icon: FiPhone },
   { id: 'settings', name: 'Settings', icon: FiSettings },

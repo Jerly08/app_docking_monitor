@@ -50,6 +50,7 @@ import {
   FiEye,
   FiCopy,
   FiSave,
+  FiCamera,
 } from 'react-icons/fi'
 import React, { useState, useEffect, Fragment } from 'react'
 import ClientOnlyLayout from '@/components/Layout/ClientOnlyLayout'
@@ -437,6 +438,16 @@ const WorkPlanTable = ({ workItems, onUpdate, onDelete, onAddChild, onViewTask, 
                 aria-label="View Details"
                 title="View Task Details"
                 onClick={() => onViewTask(item)}
+                suppressHydrationWarning
+              />
+              <IconButton
+                size="sm"
+                variant="ghost"
+                icon={<FiCamera />}
+                colorScheme="orange"
+                aria-label="Upload Images"
+                title="Upload Images"
+                onClick={() => onViewTask(item)} // Opens task modal which now includes image upload
                 suppressHydrationWarning
               />
               <IconButton
